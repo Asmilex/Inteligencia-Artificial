@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<category>
+    <pattern>Yo bien, que tal tu</pattern>
+    <template>Estoy genial!! Me encanta conocer gente nueva</template>
+</category>
+
+<category>
+    <pattern>Genial, como te llamas</pattern>
+    <template>HALFONSO</template>
+</category>
+
+<category>
+    <pattern>Hola *</pattern>
+    <template>Hola, que tal?</template>
+</category>
+
+<category>
+    <pattern>Hola</pattern>
+    <template>Hola de nuevo, que tal?</template>
+</category>
+
+<category>
+    <pattern>^ que tal tu</pattern>
+    <template>Estoy genial!!!</template>
+</category>
+
+<category>
+    <pattern> fenomeno, me llamo *</pattern>
+    <template> Que casualidad <star/> yo tambien tengo nombre, me llamo HALberto </template>
+</category>
+
+
+</aiml>
