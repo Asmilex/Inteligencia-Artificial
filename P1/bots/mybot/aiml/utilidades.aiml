@@ -168,7 +168,7 @@
 			</condition>
 		</template>
 	</category>
-	
+
 	<!-- Regla que elimina la palabra de posicion number(<star/>) en <star index="2"> -->
 	<category>
 		<pattern>
@@ -218,7 +218,7 @@
 			</condition>
 		</template>
 	</category>
-	
+
 	<!-- Regla que aniade una palabra al principio de una frase si la palabra no estaba ya en la frase -->
 	<category>
 		<pattern>
@@ -249,7 +249,7 @@
 			<get var="set"/>
 		</template>
 	</category>
-	
+
 	<!-- Regla que genera un numero aleatorio en el rango de 1 a number -->
 	<category>
 		<pattern>
@@ -388,7 +388,7 @@
 	        </condition>
 	    </template>
 	</category>
-	
+
 	<!-- Regla que inserta un nuevo elemento en la posicion indicada -->
 	<category>
 	    <pattern>
@@ -422,7 +422,7 @@
 	        </condition>
 	    </template>
 	</category>
-	
+
 
 	<!-- Regla que separa una palabra letra a letra -->
 	<category>
@@ -439,7 +439,7 @@
 	<!-- Regla que elimina los espacios de una lista de palabras -->
 	<category>
 	<pattern> decode * </pattern>
-	<template> 
+	<template>
 	  <think>
 		<set var="palabra"></set>
 		<set var="solucion"></set>
@@ -451,7 +451,7 @@
 			<li value="NIL">
 				<set var="solucion"><get var="solucion"/> <get var="palabra"/></set>
 			</li>
-			<li value="_"> 
+			<li value="_">
 				<set var="solucion"><get var="solucion"/> <get var="palabra"/></set>
 				<set var="palabra"></set>
 				<set var="caracter"><first><get var="tmp"/></first></set>
@@ -473,7 +473,7 @@
 	<!-- Regla que concatena una lista de palabras mediante un "_" -->
 	<category>
 	<pattern> code * </pattern>
-	<template> 
+	<template>
 	  <think>
 		<set var="tmp"><star/></set>
 		<set var="solucion"><first><get var="tmp"/></first></set>
