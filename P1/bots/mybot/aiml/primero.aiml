@@ -7,6 +7,11 @@
 </category>
 
 <category>
+    <pattern> como estas </pattern>
+    <template> <srai>YO BIEN, QUE TAL TU</srai> </template>
+</category>
+
+<category>
     <pattern>Genial, como te llamas</pattern>
     <template>HALFONSO</template>
 </category>
@@ -31,5 +36,11 @@
     <template> Que casualidad <star/> yo tambien tengo nombre, me llamo HALberto </template>
 </category>
 
-
+<category>
+    <pattern>^ me llamo *</pattern>
+    <template>
+        <set name="nombre"> <star index="2"/>  </set>
+        <get name="nombre"/> es un bonito nombre.
+    </template>
+</category>
 </aiml>
