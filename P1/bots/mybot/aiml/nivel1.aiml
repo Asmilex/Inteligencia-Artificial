@@ -2,38 +2,121 @@
 <aiml version="2.0">
 
 <!--Extraer información sobre el día-->>
-<category>
-    <pattern> ^ <set>tener_condicional</set> ^ <set>cita</set> * </pattern>
-    <template> <srai> EXTRAER DIA <star index="1"/> </srai> </template>
-</category>
 
 <category>
-    <pattern> ^ <set>tener_condicional</set> * <set>cita</set> ^ </pattern>
-    <template> <srai>EXTRAER DIA <star index="1"/></srai> </template>
-</category>
-
-<!--Resolutores-->
-
-<category>
-    <pattern>EXTRAER DIA *</pattern>
+    <pattern> ^ el (dia) * de *  ^ <set>tener_condicional</set> ^ </pattern>
     <template>
         <think>
-            <!--Iterar desde el 1 hasta el 31 buscando el día (FINDITEM)-->
-            <!--Iterar hasta encontrar la fecha-->
-            <!--Guardar la fecha en una variable, y mandar a COMPROBAR_DIA_Y_CONFIRMAR-->
+            <set var="dia">
+                <star index="1"/>
+            </set>
+
+            <set var="mes_letra">
+                <star index="2"/>
+            </set>
+
+            <set var="mes_index">
+                <map name="month_index_ES"><star index="2"/></map>
+            </set>
+
+            <set var="full_day">
+                <star index="1"/>-<star index="2"/>-20
+            </set>
         </think>
+
+        <srai>COMRPOBAR_DIA_Y_RESPONDER</srai>
+
     </template>
 </category>
 
 <category>
-    <pattern> COMPROBAR_DIA_Y_CONFIRMAR </pattern>
-    <template> respuesta </template>
+    <pattern> ^ <set>tener_condicional</set> ^ el (dia) * de * </pattern>
+    <template>
+        <think>
+            <set var="dia">
+                <star index="1"/>
+            </set>
+
+            <set var="mes_letra">
+                <star index="2"/>
+            </set>
+
+            <set var="mes_index">
+                <map name="month_index_ES"><star index="2"/></map>
+            </set>
+
+            <set var="full_day">
+                <star index="1"/>-<star index="2"/>-20
+            </set>
+        </think>
+
+        <srai>COMRPOBAR_DIA_Y_RESPONDER</srai>
+
+    </template>
 </category>
+
+
+<!--Resolutores-->
 
 <category>
-    <pattern> CONFIRMAR_DENEGAR_DIA </pattern>
-    <template> respuesta </template>
+    <pattern> COMRPOBAR_DIA_Y_RESPONDER </pattern>
+    <template>
+        <think>
+            <set var="listado_sucio">
+                <srai> LIST OF DAY <get var="full_day"/> </srai>
+            </set>
+            <set var="iterador">0</set>
+
+            <set var="item">
+                <srai> ITERATE <get var="listado_sucio"/> </srai>
+            </set>
+        </think>
+
+        Tengo los siguientes días disponibles:
+
+        <!--Listado en formato null OCUPADO-->
+        <condition var="item">
+            <li value="end"> </li>
+
+            <li value="null">
+                <!-- Hora disponible => sacar a la lista -->
+
+                 <map name="anade_cero"><get var="iterador"/></map>:00
+
+                <think>
+                    <set var="iterador">
+                        <srai> PLUS <get var="iterador"/> 1 </srai>
+                    </set>
+
+                    <set var="item">
+                        <srai> NEXT </srai>
+                    </set>
+                </think>
+                <loop/>
+            </li>
+
+
+            <li value="OCUPADO">
+                <!-- Este valor no nos vale, siguiente -->
+                <think>
+                    <set var="iterador">
+                        <srai> PLUS <get var="iterador"/> 1 </srai>
+                    </set>
+
+                    <set var="item">
+                        <srai> NEXT </srai>
+                    </set>
+                </think>
+                <loop/>
+            </li>
+        </condition>
+
+    </template>
 </category>
 
 
+<category>
+    <pattern> COMPROBACION </pattern>
+    <template> funciona </template>
+</category>
 </aiml>
