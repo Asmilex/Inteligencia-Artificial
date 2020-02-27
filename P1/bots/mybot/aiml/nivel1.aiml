@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!--Extraer información sobre el día-->>
+<category>
+    <pattern> ^ <set>tener_condicional</set> ^ <set>cita</set> * </pattern>
+    <template> <srai> EXTRAER DIA <star index="1"/> </srai> </template>
+</category>
+
+<category>
+    <pattern> ^ <set>tener_condicional</set> * <set>cita</set> ^ </pattern>
+    <template> <srai>EXTRAER DIA <star index="1"/></srai> </template>
+</category>
+
+<!--Resolutores-->
+
+<category>
+    <pattern>EXTRAER DIA *</pattern>
+    <template>
+        <think>
+            <!--Iterar desde el 1 hasta el 31 buscando el día (FINDITEM)-->
+            <!--Iterar hasta encontrar la fecha-->
+            <!--Guardar la fecha en una variable, y mandar a COMPROBAR_DIA_Y_CONFIRMAR-->
+        </think>
+    </template>
+</category>
+
+<category>
+    <pattern> COMPROBAR_DIA_Y_CONFIRMAR </pattern>
+    <template> respuesta </template>
+</category>
+
+<category>
+    <pattern> CONFIRMAR_DENEGAR_DIA </pattern>
+    <template> respuesta </template>
+</category>
+
+
+</aiml>
