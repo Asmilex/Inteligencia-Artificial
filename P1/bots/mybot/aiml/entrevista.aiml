@@ -37,7 +37,7 @@
 
 <category>
     <pattern> ^ <set>number</set> ^ <set>virtudes</set> ^ </pattern>
-    <template> <srai> Cuales son tus 3 mayores virtudes </srai> </template>
+    <template> Te diré 3 de ellas: <srai> Cuales son tus 3 mayores virtudes </srai> </template>
 </category>
 
 <category>
