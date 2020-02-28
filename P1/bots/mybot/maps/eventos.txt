@@ -16,14 +16,14 @@
 22-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
 23-02-20:null null null null null null ocupado ocupado ocupado null null null null null null null null null null null null null null null
 24-02-20:null null null null null null null OCUPADO null null null null null null null null null null null null null null null null
-25-02-20:¿PARA ESTA SEMANA?
-26-02-20:¿PARA ESTA SEMANA?
-27-02-20:¿PARA ESTA SEMANA?
+25-02-20:ï¿½PARA ESTA SEMANA?
+26-02-20:ï¿½PARA ESTA SEMANA?
+27-02-20:ï¿½PARA ESTA SEMANA?
 28-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
 29-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
 01-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
 02-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
-03-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
+03-03-20:null null OCUPADO null null null null null null null null null null null null null null null null null null null null null
 04-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
 05-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
 06-03-20:null null null null null null null null null null null null null null null null null null null null null null null null

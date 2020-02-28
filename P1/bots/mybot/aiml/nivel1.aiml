@@ -56,19 +56,17 @@
 
 
 <category>
-    <pattern> (Si) ^ (0)<set>number</set>:00 ^ </pattern>
-    <that>COMRPOBAR_DIA_Y_RESPONDER</that>
+    <pattern> ^ a las * </pattern>
     <template>
-        <srai> SET HORA <star index="2"/> </srai>
-        Quiere otra hora?
-    </template>
-</category>
+        <set name="hora">
+            <star index="2"/>
+        </set>
 
-<category>
-    <pattern> SET HORA * </pattern>
-    <template>
-        <set name="hora"><star index="1"/></set>
-        <srai> MARK OCUPADO AT <get name="hora"/> ON <get name="full_day"/> </srai>
+        <srai>MARK OCUPADO AT <get name="hora"/> ON <get name="full_day"/></srai>
+
+        Quiere otra hora? Tengo las siguientes disponibles:
+
+        <srai> COMPROBAR HORAS DIA <get name="full_day"/> </srai>
     </template>
 </category>
 
@@ -98,9 +96,29 @@
 <category>
     <pattern> COMRPOBAR_DIA_Y_RESPONDER </pattern>
     <template>
+        <srai> COMPROBAR HORAS DIA <get name="full_day"/> </srai>
+
+        <condition name="hay_hueco">
+            <li value="true">
+                Para el día <get name="full_day"/> tengo:
+                <get name="horas_disponibles"/>.
+
+                A que hora quieres
+            </li>
+            <li value="false">
+                Lo siento, no tengo hueco ese día. Quieres otro?
+            </li>
+        </condition>
+    </template>
+</category>
+
+
+<category>
+    <pattern> COMPROBAR HORAS DIA * </pattern>
+    <template>
         <think>
             <set var="listado_sucio">
-                <srai> LIST OF DAY <get name="full_day"/> </srai>
+                <srai> LIST OF DAY <star index="1"/> </srai>
             </set>
 
             <set var="iterador">0</set>
@@ -110,9 +128,9 @@
                 <srai> ITERATE <get var="listado_sucio"/> </srai>
             </set>
 
-            <set var="horas_disponibles"></set>
+            <set name="horas_disponibles"></set>
 
-            <set var="hay_hueco">false</set>
+            <set name="hay_hueco">false</set>
 
             <condition var="item">
                 <li value="end"> </li>
@@ -120,8 +138,8 @@
                 <li value="null">
                     <!-- Hora disponible => sacar a la lista -->
 
-                    <set var="horas_disponibles">
-                        <get var="horas_disponibles"/> <map name="anade_cero"><get var="iterador"/></map>:00
+                    <set name="horas_disponibles">
+                        <get name="horas_disponibles"/> <map name="anade_cero"><get var="iterador"/></map>:00
                     </set>
 
                     <set var="iterador">
@@ -132,7 +150,7 @@
                         <srai> NEXT </srai>
                     </set>
 
-                    <set var="hay_hueco">true</set>
+                    <set name="hay_hueco">true</set>
 
                     <loop/>
                 </li>
@@ -152,24 +170,6 @@
                 </li>
             </condition>
         </think>
-
-        <condition var="hay_hueco">
-            <li value="true">
-                Para el día <get name="full_day"/> tengo:
-                <get var="horas_disponibles"/>.
-
-                A que hora quieres
-            </li>
-            <li value="false">
-                Lo siento, no tengo hueco ese día. Quieres otro?
-            </li>
-        </condition>
     </template>
-</category>
-
-
-<category>
-    <pattern> COMPROBACION </pattern>
-    <template> funciona </template>
 </category>
 </aiml>
