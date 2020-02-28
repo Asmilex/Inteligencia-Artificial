@@ -67,29 +67,58 @@
         Quiere otra hora? Tengo las siguientes disponibles:
 
         <srai> COMPROBAR HORAS DIA <get name="full_day"/> </srai>
+        <get name="horas_disponibles"/>
     </template>
 </category>
 
 <category>
     <pattern>No</pattern>
-    <that>SET HORA *</that>
     <template> Ok, muchas gracias </template>
 </category>
 
 
 <category>
     <pattern> Me da igual </pattern>
-    <that>SET HORA *</that>
     <template>
-        WIP
+        <think>
+            <set name="hora">
+                <srai> SUBLIST FROM 1 TO 1 OF <get name="horas_disponibles"/> </srai>
+            </set>
+
+            <set name = "topic">propongo_horas</set>
+        </think>
+
+        Te gustaría a las <get name="hora"/>?
+    </template>
+</category>
+
+
+
+<topic name = "propongo_horas">
+
+<category>
+    <pattern> No </pattern>
+    <template>
+        <set name="horas_disponibles">
+            <srai> REMOVE 1 FIRST ELEMENT FROM <get name="horas_disponibles"/> </srai>
+        </set>
+        <srai> Me da igual </srai>
     </template>
 </category>
 
 <category>
-    <pattern> patron </pattern>
-    <template> respuesta </template>
+    <pattern> Si </pattern>
+    <template>
+        <think>
+            <set name = "topic">unknown</set>
+        </think>
+        De SPM socio, te lo marco.
+        <srai> a las <get name="hora"/> </srai>
+
+    </template>
 </category>
 
+</topic>
 
 <!--Resolutores-->
 
