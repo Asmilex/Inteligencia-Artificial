@@ -2,7 +2,6 @@
 <aiml version="2.0">
 
 <!--Extraer información sobre el día-->>
-
 <category>
     <pattern> ^ el (dia) <set>number</set> de *  ^ <set>tener_condicional</set> ^ </pattern>
     <template>
@@ -55,6 +54,12 @@
 </category>
 
 
+
+<!-- ──────────────────────────────────────────────────────────────────────────────── -->
+
+
+
+<!-- Sacar información con respecto a la hora-->
 <category>
     <pattern> ^ a las * </pattern>
     <template>
@@ -93,9 +98,8 @@
 </category>
 
 
-
+<!-- Le ofrezco horas y el usuario me responde si/no-->
 <topic name = "propongo_horas">
-
 <category>
     <pattern> No </pattern>
     <template>
@@ -120,8 +124,13 @@
 
 </topic>
 
-<!--Resolutores-->
 
+
+<!-- ──────────────────────────────────────────────────────────────────────────────── -->
+
+
+
+<!--Resolutores-->
 <category>
     <pattern> COMRPOBAR_DIA_Y_RESPONDER </pattern>
     <template>
@@ -146,11 +155,40 @@
     <pattern> COMPROBAR HORAS DIA * </pattern>
     <template>
         <think>
+            <srai> COMPROBAR DIA <star index="1"/> DESDE 0 HASTA 23 </srai>
+        </think>
+    </template>
+</category>
+
+<category>
+    <pattern> COMPROBAR HORAS MANANA * </pattern>
+    <template>
+        <think>
+            <srai> COMPROBAR DIA <star index="1"/> DESDE 8 HASTA 12 </srai>
+        </think>
+    </template>
+</category>
+
+
+<category>
+    <pattern> COMPROBAR HORAS TARDE * </pattern>
+    <template>
+        <think>
+            <srai> COMPROBAR DIA <star index="1"/> DESDE 13 HASTA 20 </srai>
+        </think>
+    </template>
+</category>
+
+
+<category>
+    <pattern> COMPROBAR DIA * DESDE * HASTA * </pattern>
+    <template>
+        <think>
             <set var="listado_sucio">
                 <srai> LIST OF DAY <star index="1"/> </srai>
             </set>
 
-            <set var="iterador">0</set>
+            <set var="iterador"><star index="2"/></set>
 
             <!--Listado en formato null OCUPADO-->
             <set var="item">
@@ -171,6 +209,10 @@
                         <get name="horas_disponibles"/> <map name="anade_cero"><get var="iterador"/></map>:00
                     </set>
 
+                    <set var="parar_comparar">
+                        <srai>COMPARE <get var="iterador"/> WITH <star index="3"/></srai>
+                    </set>
+
                     <set var="iterador">
                         <srai> PLUS <get var="iterador"/> 1 </srai>
                     </set>
@@ -178,6 +220,11 @@
                     <set var="item">
                         <srai> NEXT </srai>
                     </set>
+
+                    <!-- Ha tocado el límite superior, no hacer más-->
+                    <condition var="parar_comparar" value="YES">
+                        <set var="item">end</set>
+                    </condition>
 
                     <set name="hay_hueco">true</set>
 
@@ -194,6 +241,11 @@
                     <set var="item">
                         <srai> NEXT </srai>
                     </set>
+
+                    <!-- Ha tocado el límite superior, no hacer más-->
+                    <condition var="parar_comparar" value="YES">
+                        <set var="item">end</set>
+                    </condition>
 
                     <loop/>
                 </li>
