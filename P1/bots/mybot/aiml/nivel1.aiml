@@ -4,23 +4,23 @@
 <!--Extraer información sobre el día-->>
 
 <category>
-    <pattern> ^ el (dia) * de *  ^ <set>tener_condicional</set> ^ </pattern>
+    <pattern> ^ el (dia) <set>number</set> de *  ^ <set>tener_condicional</set> ^ </pattern>
     <template>
         <think>
-            <set var="dia">
-                <star index="1"/>
-            </set>
-
-            <set var="mes_letra">
+            <set name="dia">
                 <star index="2"/>
             </set>
 
-            <set var="mes_index">
-                <map name="month_index_ES"><star index="2"/></map>
+            <set name="mes_letra">
+                <star index="3"/>
             </set>
 
-            <set var="full_day">
-                <star index="1"/>-<star index="2"/>-20
+            <set name="mes_index">
+                <map name="month_index_ES"><get name="mes_letra"/></map>
+            </set>
+
+            <set name="full_day">
+                <map name="anade_cero"><get name="dia"/></map>-<get name="mes_index"/>-20
             </set>
         </think>
 
@@ -30,29 +30,66 @@
 </category>
 
 <category>
-    <pattern> ^ <set>tener_condicional</set> ^ el (dia) * de * </pattern>
+    <pattern> ^ <set>tener_condicional</set> ^ el (dia) <set>number</set> de * </pattern>
     <template>
         <think>
-            <set var="dia">
-                <star index="1"/>
+            <set name="dia">
+                <star index="4"/>
             </set>
 
-            <set var="mes_letra">
-                <star index="2"/>
+            <set name="mes_letra">
+                <star index="5"/>
             </set>
 
-            <set var="mes_index">
-                <map name="month_index_ES"><star index="2"/></map>
+            <set name="mes_index">
+                <map name="month_index_ES"><get name="mes_letra"/></map>
             </set>
 
-            <set var="full_day">
-                <star index="1"/>-<star index="2"/>-20
+            <set name="full_day">
+                <map name="anade_cero"><get name="dia"/></map>-<get name="mes_index"/>-20
             </set>
         </think>
 
         <srai>COMRPOBAR_DIA_Y_RESPONDER</srai>
-
     </template>
+</category>
+
+
+<category>
+    <pattern> (Si) ^ (0)<set>number</set>:00 ^ </pattern>
+    <that>COMRPOBAR_DIA_Y_RESPONDER</that>
+    <template>
+        <srai> SET HORA <star index="2"/> </srai>
+        Quiere otra hora?
+    </template>
+</category>
+
+<category>
+    <pattern> SET HORA * </pattern>
+    <template>
+        <set name="hora"><star index="1"/></set>
+        <srai> MARK OCUPADO AT <get name="hora"/> ON <get name="full_day"/> </srai>
+    </template>
+</category>
+
+<category>
+    <pattern>No</pattern>
+    <that>SET HORA *</that>
+    <template> Ok, muchas gracias </template>
+</category>
+
+
+<category>
+    <pattern> Me da igual </pattern>
+    <that>SET HORA *</that>
+    <template>
+        WIP
+    </template>
+</category>
+
+<category>
+    <pattern> patron </pattern>
+    <template> respuesta </template>
 </category>
 
 
@@ -63,54 +100,70 @@
     <template>
         <think>
             <set var="listado_sucio">
-                <srai> LIST OF DAY <get var="full_day"/> </srai>
+                <srai> LIST OF DAY <get name="full_day"/> </srai>
             </set>
+
             <set var="iterador">0</set>
 
+            <!--Listado en formato null OCUPADO-->
             <set var="item">
                 <srai> ITERATE <get var="listado_sucio"/> </srai>
             </set>
+
+            <set var="horas_disponibles"></set>
+
+            <set var="hay_hueco">false</set>
+
+            <condition var="item">
+                <li value="end"> </li>
+
+                <li value="null">
+                    <!-- Hora disponible => sacar a la lista -->
+
+                    <set var="horas_disponibles">
+                        <get var="horas_disponibles"/> <map name="anade_cero"><get var="iterador"/></map>:00
+                    </set>
+
+                    <set var="iterador">
+                        <srai> PLUS <get var="iterador"/> 1 </srai>
+                    </set>
+
+                    <set var="item">
+                        <srai> NEXT </srai>
+                    </set>
+
+                    <set var="hay_hueco">true</set>
+
+                    <loop/>
+                </li>
+
+                <li value="OCUPADO">
+                    <!-- Este valor no nos vale, siguiente -->
+
+                    <set var="iterador">
+                        <srai> PLUS <get var="iterador"/> 1 </srai>
+                    </set>
+
+                    <set var="item">
+                        <srai> NEXT </srai>
+                    </set>
+
+                    <loop/>
+                </li>
+            </condition>
         </think>
 
-        Tengo los siguientes días disponibles:
+        <condition var="hay_hueco">
+            <li value="true">
+                Para el día <get name="full_day"/> tengo:
+                <get var="horas_disponibles"/>.
 
-        <!--Listado en formato null OCUPADO-->
-        <condition var="item">
-            <li value="end"> </li>
-
-            <li value="null">
-                <!-- Hora disponible => sacar a la lista -->
-
-                 <map name="anade_cero"><get var="iterador"/></map>:00
-
-                <think>
-                    <set var="iterador">
-                        <srai> PLUS <get var="iterador"/> 1 </srai>
-                    </set>
-
-                    <set var="item">
-                        <srai> NEXT </srai>
-                    </set>
-                </think>
-                <loop/>
+                A que hora quieres
             </li>
-
-
-            <li value="OCUPADO">
-                <!-- Este valor no nos vale, siguiente -->
-                <think>
-                    <set var="iterador">
-                        <srai> PLUS <get var="iterador"/> 1 </srai>
-                    </set>
-
-                    <set var="item">
-                        <srai> NEXT </srai>
-                    </set>
-                </think>
-                <loop/>
+            <li value="false">
+                Lo siento, no tengo hueco ese día. Quieres otro?
             </li>
         </condition>
-
     </template>
 </category>
 
