@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<category>
+    <pattern> PRESENTAR HORAS DISPONIBLES </pattern>
+    <template>
+        <condition name="hay_hueco">
+            <li value="true">
+                Para el día <get name="fecha"/> tengo:
+                <get name="horas_disponibles"/>.
+
+                A que hora quieres
+            </li>
+            <li value="false">
+                Lo siento, no tengo hueco ese día. Quieres otro?
+            </li>
+        </condition>
+    </template>
+</category>
+
+
+<!-- ──────────────────────────────────────────────────────────────────────────────── -->
+
+
+<category>
+    <pattern> COMPROBAR DIA * Y RESPONDER </pattern>
+    <template>
+        <srai> COMPROBAR HORAS DIA <star index="1"/> </srai>
+        <srai> PRESENTAR HORAS DISPONIBLES </srai>
+    </template>
+</category>
+
+
+<category>
+    <pattern> COMPROBAR HORAS DIA * </pattern>
+    <template>
+        <think>
+            <srai> COMPROBAR DIA <star index="1"/> DESDE 0 HASTA 23 </srai>
+        </think>
+    </template>
+</category>
+
+
+<!-- ──────────────────────────────────────────────────────────────────────────────── -->
+
+
+<category>
+    <pattern> COMPROBAR HORAS MANANA * </pattern>
+    <template>
+        <think>
+            <srai> COMPROBAR DIA <star index="1"/> DESDE 8 HASTA 12 </srai>
+        </think>
+    </template>
+</category>
+
+<category>
+    <pattern> COMPROBAR HORAS MANANA * Y RESPONDER </pattern>
+    <template>
+            <srai> COMPROBAR HORAS TARDE <star index="1"/> </srai>
+        <srai> PRESENTAR HORAS DISPONIBLES </srai>
+    </template>
+</category>
+
+
+<!-- ──────────────────────────────────────────────────────────────────────────────── -->
+
+
+<category>
+    <pattern> COMPROBAR HORAS TARDE * </pattern>
+    <template>
+        <think>
+            <srai> COMPROBAR DIA <star index="1"/> DESDE 13 HASTA 20 </srai>
+        </think>
+    </template>
+</category>
+
+<category>
+    <pattern> COMPROBAR HORAS TARDE * Y RESPONDER </pattern>
+    <template>
+        <srai> COMPROBAR HORAS TARDE <star index="1"/> </srai>
+        <srai> PRESENTAR HORAS DISPONIBLES </srai>
+    </template>
+</category>
+
+
+<!-- ──────────────────────────────────────────────────────────────────────────────── -->
+
+
+<category>
+    <pattern> COMPROBAR DIA * DESDE * HASTA * </pattern>
+    <template>
+        <think>
+            <set var="listado_sucio">
+                <srai> LIST OF DAY <star index="1"/> </srai>
+            </set>
+
+            <set var="iterador"><star index="2"/></set>
+
+            <!--Listado en formato null OCUPADO-->
+            <set var="item">
+                <srai> ITERATE <get var="listado_sucio"/> </srai>
+            </set>
+
+            <set name="horas_disponibles"></set>
+
+            <set name="hay_hueco">false</set>
+
+            <condition var="item">
+                <li value="end"> </li>
+
+                <li value="null">
+                    <!-- Hora disponible => sacar a la lista -->
+
+                    <set name="horas_disponibles">
+                        <get name="horas_disponibles"/> <map name="anade_cero"><get var="iterador"/></map>:00
+                    </set>
+
+                    <set var="parar_comparar">
+                        <srai>COMPARE <get var="iterador"/> WITH <star index="3"/></srai>
+                    </set>
+
+                    <set var="iterador">
+                        <srai> PLUS <get var="iterador"/> 1 </srai>
+                    </set>
+
+                    <set var="item">
+                        <srai> NEXT </srai>
+                    </set>
+
+                    <!-- Ha tocado el límite superior, no hacer más-->
+                    <condition var="parar_comparar" value="YES">
+                        <set var="item">end</set>
+                    </condition>
+
+                    <set name="hay_hueco">true</set>
+
+                    <loop/>
+                </li>
+
+                <li value="OCUPADO">
+                    <!-- Este valor no nos vale, siguiente -->
+
+                    <set var="iterador">
+                        <srai> PLUS <get var="iterador"/> 1 </srai>
+                    </set>
+
+                    <set var="item">
+                        <srai> NEXT </srai>
+                    </set>
+
+                    <!-- Ha tocado el límite superior, no hacer más-->
+                    <condition var="parar_comparar" value="YES">
+                        <set var="item">end</set>
+                    </condition>
+
+                    <loop/>
+                </li>
+            </condition>
+        </think>
+    </template>
+</category>
+
+</aiml>

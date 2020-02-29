@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+
+<category>
+    <pattern> HALLAR FECHA DESEADA </pattern>
+    <template>
+          <condition name="rel_temp">
+            <li value="hoy">
+                <set name="fecha">
+                    <date/>
+                </set>
+            </li>
+
+            <li value="manana">
+                <set name="fecha">
+                    <srai> DATE TOMORROW </srai>
+                </set>
+            </li>
+
+            <li value="pasado manana">
+                <set name="fecha">
+                    <srai> DATE IN 2 DAYS </srai>
+                </set>
+            </li>
+
+            <li value="el proximo">
+                <set name="fecha">
+                    <srai> DATE IN <srai> DAYS UNTIL <get name="dia_semana"/> </srai> DAYS </srai>
+                </set>
+            </li>
+
+            <li value="proximo">
+                <set name="fecha">
+                    <srai> DATE IN <srai> DAYS UNTIL <get name="dia_semana"/> </srai> DAYS </srai>
+                </set>
+            </li>
+
+            <li value="siguiente">
+                <set name="fecha">
+                    <srai> DATE IN <srai> DAYS UNTIL <get name="dia_semana"/> </srai> DAYS </srai>
+                </set>
+            </li>
+          </condition>
+    </template>
+</category>
+
+</aiml>
