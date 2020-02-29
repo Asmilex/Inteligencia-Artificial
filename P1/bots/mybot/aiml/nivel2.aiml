@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+
+<!-- Especificar el día -->
+<category>
+    <pattern> ^ <set>tener_condicional</set> ^ para el <set>weekday_es</set> ^</pattern>
+    <template>
+        <set name="dia_semana">
+            <star index="4"/>
+        </set>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ <set>tener_condicional</set> ^ para el <set>weekday_es</set> por la <set>franja</set> ^</pattern>
+    <template>
+        <set name="dia_semana">
+            <star index="4"/>
+        </set>
+
+        <set name="franja">
+            <star index="5"/>
+        </set>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ <set>tener_condicional</set> ^ para el <set>weekday_es</set> a las * </pattern>
+    <template>
+        <set name="dia_semana">
+            <star index="4"/>
+        </set>
+
+        <set name="hora">
+            <star index="5"/>
+        </set>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ para el <set>weekday_es</set> a las * <set>tener_condicional</set> ^ </pattern>
+    <template>
+        <set name="dia_semana">
+            <star index="2"/>
+        </set>
+
+        <set name="hora">
+            <star index="3"/>
+        </set>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ para el <set>weekday_es</set> por la <set>franja</set> <set>tener_condicional</set> ^ </pattern>
+    <template>
+        <set name="dia_semana">
+            <star index="2"/>
+        </set>
+
+        <set name="franja">
+            <star index="3"/>
+        </set>
+    </template>
+</category>
+
+
+
+<!-- Dia relativo -->
+<category>
+    <pattern> ^ <set>tener_condicional</set> ^ para <set>relativ_temporal</set> <set>weekday_es</set> ^ </pattern>
+    <template>
+        <set name="rel_temp">
+            <star index="4"/>
+        </set>
+
+        <set name="dia_semana">
+            <star index="5"/>
+        </set>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ <set>tener_condicional</set> ^ para <set>relativ_temporal</set> <set>weekday_es</set> por la <set>franja</set> ^ </pattern>
+    <template>
+        <set name="rel_temp">
+            <star index="4"/>
+        </set>
+
+        <set name="dia_semana">
+            <star index="5"/>
+        </set>
+
+        <set name="franja">
+            <star index="6"/>
+        </set>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ <set>tener_condicional</set> ^ para <set>relativ_temporal</set> <set>weekday_es</set> a las * ^ </pattern>
+    <template>
+        <set name="rel_temp">
+            <star index="4"/>
+        </set>
+
+        <set name="dia_semana">
+            <star index="5"/>
+        </set>
+
+        <set name="hora">
+            <star index="6"/>
+        </set>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ para <set>relativ_temporal</set> <set>weekday_es</set> por la <set>franja</set> <set>tener_condicional</set> ^ </pattern>
+    <template>
+        <set name="rel_temp">
+            <star index="2"/>
+        </set>
+
+        <set name="dia_semana">
+            <star index="3"/>
+        </set>
+
+        <set name="franja">
+            <star index="4"/>
+        </set>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ para <set>relativ_temporal</set> <set>weekday_es</set> a las * <set>tener_condicional</set> ^ </pattern>
+    <template>
+        <set name="rel_temp">
+            <star index="2"/>
+        </set>
+
+        <set name="dia_semana">
+            <star index="3"/>
+        </set>
+
+        <set name="hora">
+            <star index="4"/>
+        </set>
+    </template>
+</category>
+
+</aiml>
