@@ -2,6 +2,23 @@
 <aiml version="2.0">
 
 
+
+
+
+
+
+<!-- Sigue el árbol de tu foto porque vaya basura de lenguaje-->
+
+
+
+
+
+
+
+
+
+
+
 <!-- Especificar el día -->
 <category>
     <pattern> ^ <set>tener_condicional</set> ^ para el <set>weekday_es</set> ^</pattern>
@@ -9,6 +26,9 @@
         <set name="dia_semana">
             <star index="4"/>
         </set>
+
+        <srai> HALLAR FECHA DESEADA </srai>
+        <srai> COMPROBAR DIA <get name="fecha"/> Y RESPONDER </srai>
     </template>
 </category>
 
@@ -22,6 +42,17 @@
         <set name="franja">
             <star index="5"/>
         </set>
+
+        <srai> HALLAR FECHA DESEADA </srai>
+
+        <condition name="franja">
+            <li value="manana">
+                <srai> COMPROBAR MANANA <get name="fecha"/> Y RESPONDER </srai>
+            </li>
+            <li value="tarde">
+                <srai> COMPROBAR TARDE <get name="fecha"/> Y RESPONDER </srai>
+            </li>
+        </condition>
     </template>
 </category>
 
@@ -35,6 +66,10 @@
         <set name="hora">
             <star index="5"/>
         </set>
+
+
+
+
     </template>
 </category>
 
@@ -48,6 +83,10 @@
         <set name="hora">
             <star index="3"/>
         </set>
+
+
+
+
     </template>
 </category>
 
@@ -61,6 +100,17 @@
         <set name="franja">
             <star index="3"/>
         </set>
+
+        <srai> HALLAR FECHA DESEADA </srai>
+
+        <condition name="franja">
+            <li value="manana">
+                <srai> COMPROBAR MANANA <get name="fecha"/> Y RESPONDER </srai>
+            </li>
+            <li value="tarde">
+                <srai> COMPROBAR TARDE <get name="fecha"/> Y RESPONDER </srai>
+            </li>
+        </condition>
     </template>
 </category>
 
@@ -128,6 +178,9 @@
         <set name="franja">
             <star index="4"/>
         </set>
+
+        <srai> HALLAR FECHA DESEADA </srai>
+        <srai> enlace </srai>
     </template>
 </category>
 
@@ -147,5 +200,6 @@
         </set>
     </template>
 </category>
+
 
 </aiml>
