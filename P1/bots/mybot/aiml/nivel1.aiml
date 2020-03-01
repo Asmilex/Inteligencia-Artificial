@@ -77,6 +77,13 @@
 </category>
 
 <category>
+    <pattern> Si </pattern>
+    <template>
+        Para cuando?
+     </template>
+</category>
+
+<category>
     <pattern>No</pattern>
     <template> Ok, muchas gracias </template>
 </category>
