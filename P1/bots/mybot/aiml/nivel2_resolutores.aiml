@@ -4,34 +4,51 @@
 <category>
     <pattern> HALLAR SIGUIENTE FECHA RELATIVO </pattern>
     <template>
-        <condition name="rel_temp">
-            <li value="hoy">
-                <set name="fecha">
-                    <date/>
-                </set>
-            </li>
+        <think>
+            <condition name="rel_temp">
+                <li value="hoy">
+                    <set name="fecha">
+                        <date format="%B %d %Y" jformat="dd MMMMMMMMM yy"/>
+                    </set>
+                </li>
 
-            <li value="manana">
-                <set name="fecha">
-                    <srai> DATE TOMORROW </srai>
-                </set>
-            </li>
+                <li value="manana">
+                    <set name="fecha">
+                        <srai> DATE TOMORROW </srai>
+                    </set>
+                </li>
 
-            <li value="pasado manana">
-                <set name="fecha">
-                    <srai> DATE IN 2 DAYS </srai>
-                </set>
-            </li>
-        </condition>
+                <li value="pasado">
+                    <set name="fecha">
+                        <srai> DATE IN 2 DAYS </srai>
+                    </set>
+                </li>
+
+                <li value="pasado manana">
+                    <set name="fecha">
+                        <srai> DATE IN 2 DAYS </srai>
+                    </set>
+                </li>
+            </condition>
+
+            <set name="fecha">
+                <map name="anade_cero"><srai>TOP <get name="fecha"/></srai></map>-<map name="month_index_ES"><srai>SELECTITEM 2 IN <get name="fecha"/></srai></map>-<srai>SELECTITEM 3 IN <get name="fecha"/></srai>
+            </set>
+        </think>
     </template>
 </category>
 
 <category>
     <pattern> HALLAR SIGUIENTE FECHA ESPECIFICO </pattern>
     <template>
-        <set name="fecha">
-            <srai> DATE IN <srai> DAYS UNTIL <get name="siguiente_dia"/> </srai> DAYS </srai>
-        </set>
+
+            <set name="fecha">
+                <srai> DATE IN <srai> DAYS UNTIL <get name="siguiente_dia"/> </srai> DAYS </srai>
+            </set>
+
+            <set name="fecha">
+                <map name="anade_cero"><srai>TOP <get name="fecha"/></srai></map>-<map name="month_index_ES"><srai>SELECTITEM 2 IN <get name="fecha"/></srai></map>-<srai>SELECTITEM 3 IN <get name="fecha"/></srai>
+            </set>
     </template>
 </category>
 
