@@ -124,5 +124,9 @@
 
 </topic>
 
+<category>
+    <pattern> ^ </pattern>
+    <template> QUI ISTO NO COMPRENDO AAH </template>
+</category>
 
 </aiml>
