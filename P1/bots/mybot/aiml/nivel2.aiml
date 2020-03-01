@@ -1,65 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <aiml version="2.0">
 
-
-
-
-
-
-
-<!-- Sigue el árbol de tu foto porque vaya basura de lenguaje-->
-
-
-
-
-
-
-
-
-
-
-
-<!-- Especificar el día -->
 <category>
-    <pattern> ^ <set>tener_condicional</set> ^ para el <set>weekday_es</set> ^</pattern>
+    <pattern> ^ <set>tener_condicional</set> ^ <set>relativ_temporal</set> ^</pattern>
     <template>
-        <set name="dia_semana">
+        <set name = "rel_temp">
             <star index="4"/>
         </set>
 
-        <srai> HALLAR FECHA DESEADA </srai>
-        <srai> COMPROBAR DIA <get name="fecha"/> Y RESPONDER </srai>
+        <srai> HALLAR SIGUIENTE FECHA RELATIVO </srai>
+        <srai> COMPROBAR HORAS DIA <get name="fecha"/> </srai>
     </template>
 </category>
 
 <category>
-    <pattern> ^ <set>tener_condicional</set> ^ para el <set>weekday_es</set> por la <set>franja</set> ^</pattern>
+    <pattern> ^ <set>tener_condicional</set> ^ <set>relativ_temporal</set> por la <set>franja</set> ^</pattern>
     <template>
-        <set name="dia_semana">
+        <set name = "rel_temp">
             <star index="4"/>
         </set>
 
-        <set name="franja">
+        <set name = "franja">
             <star index="5"/>
         </set>
 
-        <srai> HALLAR FECHA DESEADA </srai>
+        <srai> HALLAR SIGUIENTE FECHA RELATIVO </srai>
 
-        <condition name="franja">
+        <condition name = "franja">
             <li value="manana">
-                <srai> COMPROBAR MANANA <get name="fecha"/> Y RESPONDER </srai>
+                <srai> COMPROBAR HORAS MANANA <get name="fecha"/> Y RESPONDER</srai>
             </li>
             <li value="tarde">
-                <srai> COMPROBAR TARDE <get name="fecha"/> Y RESPONDER </srai>
+                <srai> COMPROBAR HORAS TARDE <get name="fecha"/> Y RESPONDER </srai>
             </li>
         </condition>
     </template>
 </category>
 
 <category>
-    <pattern> ^ <set>tener_condicional</set> ^ para el <set>weekday_es</set> a las * </pattern>
+    <pattern> ^ <set>tener_condicional</set> ^ <set>relativ_temporal</set> a las * </pattern>
     <template>
-        <set name="dia_semana">
+        <set name = "rel_temp">
             <star index="4"/>
         </set>
 
@@ -67,139 +48,79 @@
             <star index="5"/>
         </set>
 
+        <srai> HALLAR SIGUIENTE FECHA RELATIVO </srai>
+
+        <!-- WIP
+        COMPLETAR
+        NO
+        TE
+        OLVIDES
+        -->
+    </template>
+</category>
 
 
+<!-- ──────────────────────────────────────────────────────────────────────────────── -->
 
+
+<category>
+    <pattern> ^ <set>tener_condicional</set> ^ el [proximo siguiente] <set>weekday_es</set> ^</pattern>
+    <template>
+        <set name = "siguiente_dia">
+            <star index="5"/>
+        </set>
+
+        <srai> HALLAR SIGUIENTE FECHA ESPECIFICO </srai>
+        <srai> COMPROBAR HORAS DIA <get name="fecha"/> </srai>
     </template>
 </category>
 
 <category>
-    <pattern> ^ para el <set>weekday_es</set> a las * <set>tener_condicional</set> ^ </pattern>
+    <pattern> ^ <set>tener_condicional</set> ^ el [proximo siguiente] <set>weekday_es</set> por la <set>franja</set> ^</pattern>
     <template>
-        <set name="dia_semana">
-            <star index="2"/>
+        <set name = "siguiente_dia">
+            <star index="5"/>
         </set>
 
-        <set name="hora">
-            <star index="3"/>
+        <set name = "franja">
+            <star index="6"/>
         </set>
 
+        <srai> HALLAR SIGUIENTE FECHA ESPECIFICO </srai>
 
-
-
-    </template>
-</category>
-
-<category>
-    <pattern> ^ para el <set>weekday_es</set> por la <set>franja</set> <set>tener_condicional</set> ^ </pattern>
-    <template>
-        <set name="dia_semana">
-            <star index="2"/>
-        </set>
-
-        <set name="franja">
-            <star index="3"/>
-        </set>
-
-        <srai> HALLAR FECHA DESEADA </srai>
-
-        <condition name="franja">
+        <condition name = "franja">
             <li value="manana">
-                <srai> COMPROBAR MANANA <get name="fecha"/> Y RESPONDER </srai>
+                <srai> COMPROBAR HORAS MANANA <get name="fecha"/> Y RESPONDER</srai>
             </li>
             <li value="tarde">
-                <srai> COMPROBAR TARDE <get name="fecha"/> Y RESPONDER </srai>
+                <srai> COMPROBAR HORAS TARDE <get name="fecha"/> Y RESPONDER </srai>
             </li>
         </condition>
-    </template>
-</category>
 
-
-
-<!-- Dia relativo -->
-<category>
-    <pattern> ^ <set>tener_condicional</set> ^ para <set>relativ_temporal</set> <set>weekday_es</set> ^ </pattern>
-    <template>
-        <set name="rel_temp">
-            <star index="4"/>
-        </set>
-
-        <set name="dia_semana">
-            <star index="5"/>
-        </set>
     </template>
 </category>
 
 <category>
-    <pattern> ^ <set>tener_condicional</set> ^ para <set>relativ_temporal</set> <set>weekday_es</set> por la <set>franja</set> ^ </pattern>
+    <pattern> ^ <set>tener_condicional</set> ^ el [proximo siguiente] <set>weekday_es</set> a las *</pattern>
     <template>
-        <set name="rel_temp">
-            <star index="4"/>
-        </set>
-
-        <set name="dia_semana">
-            <star index="5"/>
-        </set>
-
-        <set name="franja">
-            <star index="6"/>
-        </set>
-    </template>
-</category>
-
-<category>
-    <pattern> ^ <set>tener_condicional</set> ^ para <set>relativ_temporal</set> <set>weekday_es</set> a las * ^ </pattern>
-    <template>
-        <set name="rel_temp">
-            <star index="4"/>
-        </set>
-
-        <set name="dia_semana">
+        <set name = "siguiente_dia">
             <star index="5"/>
         </set>
 
         <set name="hora">
-            <star index="6"/>
+            <star index="5"/>
         </set>
+
+        <srai> HALLAR SIGUIENTE FECHA ESPECIFICO </srai>
+
+        <!-- WIP
+        COMPLETAR
+        NO
+        TE
+        OLVIDES
+        -->
+
     </template>
 </category>
-
-<category>
-    <pattern> ^ para <set>relativ_temporal</set> <set>weekday_es</set> por la <set>franja</set> <set>tener_condicional</set> ^ </pattern>
-    <template>
-        <set name="rel_temp">
-            <star index="2"/>
-        </set>
-
-        <set name="dia_semana">
-            <star index="3"/>
-        </set>
-
-        <set name="franja">
-            <star index="4"/>
-        </set>
-
-        <srai> HALLAR FECHA DESEADA </srai>
-        <srai> enlace </srai>
-    </template>
-</category>
-
-<category>
-    <pattern> ^ para <set>relativ_temporal</set> <set>weekday_es</set> a las * <set>tener_condicional</set> ^ </pattern>
-    <template>
-        <set name="rel_temp">
-            <star index="2"/>
-        </set>
-
-        <set name="dia_semana">
-            <star index="3"/>
-        </set>
-
-        <set name="hora">
-            <star index="4"/>
-        </set>
-    </template>
-</category>
-
 
 </aiml>
