@@ -4,25 +4,29 @@
 <category>
     <pattern> ^ <set>tener_condicional</set> ^ <set>relativ_temporal</set> ^</pattern>
     <template>
-        <set name = "rel_temp">
-            <star index="4"/>
-        </set>
+        <think>
+            <set name = "rel_temp">
+                <star index="4"/>
+            </set>
+        </think>
 
         <srai> HALLAR SIGUIENTE FECHA RELATIVO </srai>
-        <srai> COMPROBAR HORAS DIA <get name="fecha"/> </srai>
+        <srai> COMPROBAR HORAS DIA <get name="fecha"/> Y RESPONDER</srai>
     </template>
 </category>
 
 <category>
     <pattern> ^ <set>tener_condicional</set> ^ <set>relativ_temporal</set> por la <set>franja</set> ^</pattern>
     <template>
-        <set name = "rel_temp">
-            <star index="4"/>
-        </set>
+        <think>
+            <set name = "rel_temp">
+                <star index="4"/>
+            </set>
 
-        <set name = "franja">
-            <star index="5"/>
-        </set>
+            <set name = "franja">
+                <star index="5"/>
+            </set>
+        </think>
 
         <srai> HALLAR SIGUIENTE FECHA RELATIVO </srai>
 
@@ -40,22 +44,35 @@
 <category>
     <pattern> ^ <set>tener_condicional</set> ^ <set>relativ_temporal</set> a las * </pattern>
     <template>
-        <set name = "rel_temp">
-            <star index="4"/>
-        </set>
+        <think>
+            <set name = "rel_temp">
+                <star index="4"/>
+            </set>
 
-        <set name="hora">
-            <star index="5"/>
-        </set>
+            <set name="hora">
+                <star index="5"/>
+            </set>
+        </think>
 
         <srai> HALLAR SIGUIENTE FECHA RELATIVO </srai>
 
-        <!-- WIP
-        COMPLETAR
-        NO
-        TE
-        OLVIDES
-        -->
+        <think>
+            <set var="esta_ocupado">
+                <srai> IS BUSY DAY <get name="fecha"/> AT <get name="hora"/>  </srai>
+            </set>
+        </think>
+
+        <condition var="esta_ocupado">
+            <li value="TRUE">
+                Lo tengo ocupado. Pero quizás tenga hueco
+                <srai> COMPROBAR HORAS DIA <get name="fecha"/> Y RESPONDER </srai>
+            </li>
+
+            <li value="FALSE">
+                Listo, maquina. Te la agencio.
+                <srai> a las <get name="hora"/> </srai>
+            </li>
+        </condition>
     </template>
 </category>
 
@@ -67,7 +84,7 @@
     <pattern> ^ <set>tener_condicional</set> ^ el [proximo siguiente] <set>weekday_es</set> ^</pattern>
     <template>
         <set name = "siguiente_dia">
-            <star index="5"/>
+            <star index="4"/>
         </set>
 
         <srai> HALLAR SIGUIENTE FECHA ESPECIFICO </srai>
@@ -79,11 +96,11 @@
     <pattern> ^ <set>tener_condicional</set> ^ el [proximo siguiente] <set>weekday_es</set> por la <set>franja</set> ^</pattern>
     <template>
         <set name = "siguiente_dia">
-            <star index="5"/>
+            <star index="4"/>
         </set>
 
         <set name = "franja">
-            <star index="6"/>
+            <star index="5"/>
         </set>
 
         <srai> HALLAR SIGUIENTE FECHA ESPECIFICO </srai>
@@ -96,30 +113,85 @@
                 <srai> COMPROBAR HORAS TARDE <get name="fecha"/> Y RESPONDER </srai>
             </li>
         </condition>
-
     </template>
 </category>
 
 <category>
     <pattern> ^ <set>tener_condicional</set> ^ el [proximo siguiente] <set>weekday_es</set> a las *</pattern>
     <template>
-        <set name = "siguiente_dia">
-            <star index="5"/>
-        </set>
 
-        <set name="hora">
-            <star index="5"/>
-        </set>
+            <set name = "siguiente_dia">
+                <star index="4"/>
+            </set>
+
+            <set name="hora">
+                <star index="5"/>
+            </set>
+
 
         <srai> HALLAR SIGUIENTE FECHA ESPECIFICO </srai>
 
-        <!-- WIP
-        COMPLETAR
-        NO
-        TE
-        OLVIDES
-        -->
 
+            <set var="esta_ocupado">
+                <srai> IS BUSY DAY <get name="fecha"/> AT <get name="hora"/>  </srai>
+            </set>
+
+
+        <condition var="esta_ocupado">
+            <li value="TRUE">
+                <srai> COMPROBAR HORAS DIA <get name="fecha"/> Y RESPONDER </srai>
+            </li>
+
+            <li value="FALSE">
+                Listo, para ti maquina.
+                <srai> a las <get name="hora"/> </srai>
+            </li>
+        </condition>
+    </template>
+</category>
+
+<!-- ──────────────────────────────────────────────────────────────────────────────── -->
+<!-- Fallbacks en caso de que se omita el tener_condicional-->
+
+<category>
+    <pattern> ^ <set>relativ_temporal</set> ^ </pattern>
+    <template>
+        <srai> quisiera para <star index="2"/></srai>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ <set>relativ_temporal</set> por la <set>franja</set> ^ </pattern>
+    <template>
+        <srai> quisiera <star index="2"/> por la  <star index="3"/></srai>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ <set>relativ_temporal</set> a las * </pattern>
+    <template>
+        <srai> quisiera <star index="2"/> a las <star index="3"/></srai>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ el [proximo siguiente] <set>weekday_es</set> ^ </pattern>
+    <template>
+        <srai> quisiera el proximo <star index="2"/> </srai>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ el [proximo siguiente] <set>weekday_es</set> por la <set>franja</set> ^ </pattern>
+    <template>
+        <srai> quisiera el proximo <star index="2"/> por la <star index="3"/></srai>
+    </template>
+</category>
+
+<category>
+    <pattern> ^ el [proximo siguiente] <set>weekday_es</set> a las * </pattern>
+    <template>
+        <srai> quisiera el proximo <star index="2"/> a las <star index="3"/></srai>
     </template>
 </category>
 
