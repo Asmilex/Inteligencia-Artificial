@@ -23,7 +23,7 @@
             </set>
         </think>
 
-        <srai>COMPROBAR DIA <get name="fecha"/> Y RESPONDER</srai>
+        <srai>COMPROBAR HORAS DIA <get name="fecha"/> Y RESPONDER</srai>
 
     </template>
 </category>
@@ -49,7 +49,7 @@
             </set>
         </think>
 
-        <srai>COMPROBAR DIA <get name="fecha"/> Y RESPONDER</srai>
+        <srai>COMPROBAR HORAS DIA <get name="fecha"/> Y RESPONDER</srai>
     </template>
 </category>
 
