@@ -41,7 +41,7 @@
 <category>
     <pattern> HALLAR SIGUIENTE FECHA ESPECIFICO </pattern>
     <template>
-
+        <think>
             <set name="fecha">
                 <srai> DATE IN <srai> DAYS UNTIL <get name="siguiente_dia"/> </srai> DAYS </srai>
             </set>
@@ -49,6 +49,7 @@
             <set name="fecha">
                 <map name="anade_cero"><srai>TOP <get name="fecha"/></srai></map>-<map name="month_index_ES"><srai>SELECTITEM 2 IN <get name="fecha"/></srai></map>-<srai>SELECTITEM 3 IN <get name="fecha"/></srai>
             </set>
+        </think>
     </template>
 </category>
 

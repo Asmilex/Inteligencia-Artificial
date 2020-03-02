@@ -22,7 +22,7 @@
 <category><pattern>SEASON</pattern>
 <template>
 <think><set var="month"><date format="%B" jformat="MMMMMMMMM"/></set></think>
-<set name="estacion"> <map name="season_ES"><get var="month"/></map></set>
+<set name="estacion"> <map name="season_es"><get var="month"/></map></set>
 </template>
 </category>
 
@@ -213,14 +213,14 @@
 </category>
 
 <category><pattern>DATE A WEEK FROM <set>weekday_es</set></pattern>
-<template><srai>DATE IN
-<srai>SUCCESSOR
-<srai>SUCCESSOR
-<srai>SUCCESSOR
-<srai>SUCCESSOR
-<srai>SUCCESSOR
-<srai>SUCCESSOR
-<srai>SUCCESSOR
+<template><srai>DATE IN 
+<srai>SUCCESSOR 
+<srai>SUCCESSOR 
+<srai>SUCCESSOR 
+<srai>SUCCESSOR 
+<srai>SUCCESSOR 
+<srai>SUCCESSOR 
+<srai>SUCCESSOR 
 <srai>DAYS UNTIL <star/></srai>
 </srai>
 </srai>

@@ -88,7 +88,7 @@
         </set>
 
         <srai> HALLAR SIGUIENTE FECHA ESPECIFICO </srai>
-        <srai> COMPROBAR HORAS DIA <get name="fecha"/> </srai>
+        <srai> COMPROBAR HORAS DIA <get name="fecha"/> Y RESPONDER </srai>
     </template>
 </category>
 
