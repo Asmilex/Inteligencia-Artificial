@@ -83,9 +83,11 @@
 <category>
     <pattern> ^ <set>tener_condicional</set> ^ el [proximo siguiente] <set>weekday_es</set> ^</pattern>
     <template>
-        <set name = "siguiente_dia">
-            <star index="4"/>
-        </set>
+        <think>
+            <set name = "siguiente_dia">
+                <star index="4"/>
+            </set>
+        </think>
 
         <srai> HALLAR SIGUIENTE FECHA ESPECIFICO </srai>
         <srai> COMPROBAR HORAS DIA <get name="fecha"/> Y RESPONDER </srai>
@@ -95,13 +97,15 @@
 <category>
     <pattern> ^ <set>tener_condicional</set> ^ el [proximo siguiente] <set>weekday_es</set> por la <set>franja</set> ^</pattern>
     <template>
-        <set name = "siguiente_dia">
-            <star index="4"/>
-        </set>
+        <think>
+            <set name = "siguiente_dia">
+                <star index="4"/>
+            </set>
 
-        <set name = "franja">
-            <star index="5"/>
-        </set>
+            <set name = "franja">
+                <star index="5"/>
+            </set>
+        </think>
 
         <srai> HALLAR SIGUIENTE FECHA ESPECIFICO </srai>
 
@@ -119,7 +123,7 @@
 <category>
     <pattern> ^ <set>tener_condicional</set> ^ el [proximo siguiente] <set>weekday_es</set> a las *</pattern>
     <template>
-
+        <think>
             <set name = "siguiente_dia">
                 <star index="4"/>
             </set>
@@ -127,18 +131,19 @@
             <set name="hora">
                 <star index="5"/>
             </set>
-
+        </think>
 
         <srai> HALLAR SIGUIENTE FECHA ESPECIFICO </srai>
 
-
+        <think>
             <set var="esta_ocupado">
-                <srai> IS BUSY DAY <get name="fecha"/> AT <get name="hora"/>  </srai>
+                <srai> IS BUSY DAY <get name="fecha"/> AT <get name="hora"/> </srai>
             </set>
-
+        </think>
 
         <condition var="esta_ocupado">
             <li value="TRUE">
+                No tengo esa hora en específico. Pero te propongo otras.
                 <srai> COMPROBAR HORAS DIA <get name="fecha"/> Y RESPONDER </srai>
             </li>
 
@@ -195,4 +200,8 @@
     </template>
 </category>
 
+<category>
+    <pattern> WIP </pattern>
+    <template> respuesta </template>
+</category>
 </aiml>
