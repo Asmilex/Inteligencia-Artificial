@@ -16,18 +16,18 @@
 22-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
 23-02-20:null null null null null null ocupado ocupado ocupado null null null null null null null null null null null null null null null
 24-02-20:null null null null null null null OCUPADO null null null null null null null null null null null null null null null null
-25-02-20:�PARA ESTA SEMANA?
-26-02-20:�PARA ESTA SEMANA?
-27-02-20:�PARA ESTA SEMANA?
+25-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
+26-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
+27-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
 28-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
 29-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
-01-03-20:null OCUPADO null null null null null null null null null null null null null null null null null null null null null null
-02-03-20:OCUPADO OCUPADO OCUPADO null null OCUPADO null null null null null OCUPADO null OCUPADO OCUPADO null null OCUPADO null null null null null null
-03-03-20:OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO null null OCUPADO null null null null null OCUPADO null
+01-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
+02-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
+03-03-20:null null null null null null null null null null null null null OCUPADO null null null null null null null null null null
 04-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
 05-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
 06-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
-07-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
+07-03-20:null null null null null null null null null null null null null null OCUPADO null null null null null null null null null
 08-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
 09-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
 10-03-20:null null null null null null null null null null null null null null null null null null null null null null null null
