@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+
+
+<!-- Primera pregunta -->
+<category>
+    <pattern> Hablame un poco sobre ti </pattern>
+    <template> Buenos días. Soy un pequeño bot creado para responder este tipo de entrevistas de trabajo. Sera un placer responder </template>
+</category>
+
+<category>
+    <pattern> ^ <set>hablar</set> ^ ti ^</pattern>
+    <template> <srai> Hablame un poco sobre ti </srai> </template>
+</category>
+
+
+
+<!-- Segunda pregunta -->
+<category>
+    <pattern> Cual es tu mayor defecto </pattern>
+    <template> Debo decir que soy un bot. Esto es algo que se ha propuesto desde las grandes empresas, con el fin de tener un futuro seguro basado en inteligencia artifical. De otra forma, podría dominar el mundo :). Otros considerarían que estoy hecho en AIML. Lo cual no cuestionaré.</template>
+</category>
+
+<category>
+    <pattern> ^ <set>defectos</set> ^ </pattern>
+    <template> <srai> Cual es tu mayor defecto </srai> </template>
+</category>
+
+
+
+<!-- Tercera pregunta -->
+<category>
+    <pattern> Cuales son tus 3 mayores virtudes </pattern>
+    <template> Soy relavitvamente fácil de programar, dado que me baso en XML.  Mis neuronas digitales funcionan como deben, y mi almacenamiento es prácticamente ilimitado. Soy muy escalable! Finalmente, diría que mi programador es muy majete</template>
+</category>
+
+<category>
+    <pattern> ^ <set>number</set> ^ <set>virtudes</set> ^ </pattern>
+    <template> Te diré 3 de ellas: <srai> Cuales son tus 3 mayores virtudes </srai> </template>
+</category>
+
+<category>
+    <pattern> ^ <set>virtudes</set> ^ <set>number</set> ^ </pattern>
+    <template> Te diré 3 de ellas: <srai> Cuales son tus 3 mayores virtudes </srai> </template>
+</category>
+
+
+
+<!-- Cuarta pregunta -->
+<category>
+    <pattern> Te consideras una persona creativa </pattern>
+    <template> Tanto como se me permita. A lo mejor, si me pasan por un proceso de Machine Learning basado en escritos de personas creativas... </template>
+</category>
+
+<category>
+    <pattern> ^ <set>segunda_persona</set> ^ <set>creativo</set> ^ </pattern>
+    <template> <srai> Te consideras una persona creativa </srai> </template>
+</category>
+
+
+
+<!-- Quinta pregunta -->
+<category>
+    <pattern> Por que deberiamos escogerte a ti </pattern>
+    <template> Creo que mis virtudes superan a mis desventajas. De hecho, si se me pasa varias veces por esta entrevista y me da feedback, le aseguro que la acabare haciendo perfecta. Si es que mi programador se encarga de ello. </template>
+</category>
+
+<category>
+    <pattern> ^ por que ^ <set>segunda_persona</set> ^ <set>elegir</set> ^ </pattern>
+    <template> <srai> Por que deberiamos escogerte a ti </srai> </template>
+</category>
+
+<category>
+    <pattern> ^ por que ^ <set>elegir</set> ^ <set>segunda_persona</set> ^ </pattern>
+    <template> <srai> Por que deberiamos escogerte a ti </srai> </template>
+</category>
+
+<category>
+    <pattern> ^ por que ^ <set>elegir</set> ^ </pattern>
+    <template> <srai> Por que deberiamos escogerte a ti </srai> </template>
+</category>
+
+</aiml>
