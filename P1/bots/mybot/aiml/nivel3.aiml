@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<category>
+    <pattern> Hola, [buenos buenas] [dias tardes noches] </pattern>
+    <template>
+        Clinica apeteporica, que desea?
+    </template>
+</category>
+
+<category>
+    <pattern> ^ [quiero concentar acordar ajustar concordar] ^ [entrevista cita encuentro] ^  </pattern>
+    <template>
+        Para cuando?
+    </template>
+</category>
+
+<category>
+    <pattern> ^ No lo se ^ </pattern>
+    <that>Para cuando</that>
+    <template>
+        <set name="topic">propongo_dias</set>
+
+        Quiere cita para esta semana?
+
+        <set name="distancia_semana">
+            0
+        </set>
+
+    </template>
+</category>
+
+<!-- ──────────────────────────────────────────────────────────────────────────────── -->
+
+<topic name = "propongo_dias">
+
+<category>
+    <pattern> Si </pattern>
+    <template>
+        <set name="topic">unknown</set>
+        <srai> HALLAR FECHA SEMANA PROPUESTA </srai>
+    </template>
+</category>
+
+<category>
+    <pattern> No </pattern>
+    <template>
+        <set name="distancia_semana">
+            <srai> SUMA <get name="distancia_semana"/> 7 </srai>
+        </set>
+        Para la siguiente?
+    </template>
+</category>
+
+</topic>
+
+</aiml>
