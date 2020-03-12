@@ -9,7 +9,7 @@
 </category>
 
 <category>
-    <pattern> ^ [quiero concentar acordar ajustar concordar] ^ [entrevista cita encuentro] ^  </pattern>
+    <pattern> ^ [quiero concentar acordar ajustar concordar] ^ [entrevista cita encuentro]  </pattern>
     <template>
         Para cuando?
     </template>
