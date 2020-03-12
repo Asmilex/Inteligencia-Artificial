@@ -95,7 +95,7 @@
             </set>
 
             <set var="iterador"><star index="2"/></set>
-https://marketplace.visualstudio.com/items?itemName=shoobah.pinkasheck
+
             <!--Listado en formato null OCUPADO-->
             <set var="item">
                 <srai> ITERATE <get var="listado_sucio"/> </srai>
