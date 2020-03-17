@@ -84,6 +84,32 @@
 </category>
 
 <category>
+    <pattern> ^ <set>number</set> de *</pattern>
+    <that>Para cuando</that>
+    <template>
+        <think>
+            <set name="dia">
+                <star index="2"/>
+            </set>
+
+            <set name="mes_letra">
+                <star index="3"/>
+            </set>
+
+            <set name="mes_index">
+                <map name="month_index_ES"><get name="mes_letra"/></map>
+            </set>
+
+            <set name="fecha">
+                <map name="anade_cero"><get name="dia"/></map>-<get name="mes_index"/>-20
+            </set>
+        </think>
+
+        <srai>COMPROBAR HORAS DIA <get name="fecha"/> Y RESPONDER</srai>
+    </template>
+</category>
+
+<category>
     <pattern>No</pattern>
     <template> Ok, muchas gracias </template>
 </category>

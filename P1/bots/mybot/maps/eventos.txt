@@ -11,8 +11,8 @@
 17-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
 18-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
 19-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
-20-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
-21-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
+20-02-20:OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO OCUPADO 
+21-02-20:null null OCUPADO null null null null null null null null null null null null null null null null null null null null null
 22-02-20:null null null null null null null null null null null null null null null null null null null null null null null null
 23-02-20:null null null null null null ocupado ocupado ocupado null null null null null null null null null null null null null null null
 24-02-20:null null null null null null null OCUPADO null null null null null null null null null null null null null null null null
