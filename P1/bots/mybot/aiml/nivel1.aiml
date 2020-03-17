@@ -123,17 +123,12 @@
         <think>
             <set name = "topic">unknown</set>
         </think>
-        De SPM socio, te lo marco.
+        Perfecto socio, te lo marco.
         <srai> a las <get name="hora"/> </srai>
 
     </template>
 </category>
 
 </topic>
-
-<category>
-    <pattern> ^ </pattern>
-    <template> QUI ISTO NO COMPRENDO AAH </template>
-</category>
 
 </aiml>
