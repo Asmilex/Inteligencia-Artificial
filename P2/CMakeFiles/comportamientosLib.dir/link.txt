@@ -1,0 +1,2 @@
+/usr/sbin/ar qc lib/libcomportamientosLib.a  CMakeFiles/comportamientosLib.dir/Comportamientos_Jugador/aldeano.cpp.o CMakeFiles/comportamientosLib.dir/Comportamientos_Jugador/jugador.cpp.o CMakeFiles/comportamientosLib.dir/src/comportamientos/comportamiento.cpp.o
+/usr/sbin/ranlib lib/libcomportamientosLib.a
