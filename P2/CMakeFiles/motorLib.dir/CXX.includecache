@@ -34,10 +34,6 @@ motorlib.hpp
 unistd.h
 -
 
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/util.cpp
-motorlib/util.h
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/motorlib/util.h
-
 Comportamientos_Jugador/aldeano.hpp
 chrono
 -

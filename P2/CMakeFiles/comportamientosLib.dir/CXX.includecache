@@ -6,22 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/Comportamientos_Jugador/aldeano.cpp
-../Comportamientos_Jugador/aldeano.hpp
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/Comportamientos_Jugador/aldeano.hpp
-motorlib/util.h
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/Comportamientos_Jugador/motorlib/util.h
-
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/Comportamientos_Jugador/aldeano.hpp
-chrono
--
-time.h
--
-thread
--
-comportamientos/comportamiento.hpp
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/Comportamientos_Jugador/comportamientos/comportamiento.hpp
-
 /mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/Comportamientos_Jugador/jugador.cpp
 ../Comportamientos_Jugador/jugador.hpp
 /mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/Comportamientos_Jugador/jugador.hpp
@@ -35,16 +19,14 @@ set
 -
 stack
 -
+queue
+-
 
 /mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/Comportamientos_Jugador/jugador.hpp
 comportamientos/comportamiento.hpp
 /mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/Comportamientos_Jugador/comportamientos/comportamiento.hpp
 list
 -
-
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/comportamientos/comportamiento.cpp
-comportamientos/comportamiento.hpp
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/comportamientos/comportamientos/comportamiento.hpp
 
 include/comportamientos/comportamiento.hpp
 vector
