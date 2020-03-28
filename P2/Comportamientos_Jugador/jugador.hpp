@@ -49,10 +49,10 @@ class ComportamientoJugador : public Comportamiento {
     bool hayPlan;
 
     // Métodos privados de la clase
-    bool pathFinding(int level, const estado &origen, const estado &destino, list<Action> &plan);
+    bool pathFinding(Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan);
     bool pathFinding_Profundidad(const estado &origen, const estado &destino, list<Action> &plan);
     bool pathFinding_Anchura(const estado &origen, const estado &destino, list<Action> &plan);
-    bool pathFinding_Costo_Uniforme(const estado &origen, const estado &destino, list<Action> &plan);
+    bool pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan);
     bool A_estrella(const estado &origen, const estado &destino, list<Action> &plan);
 
 

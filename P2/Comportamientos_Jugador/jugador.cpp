@@ -19,7 +19,7 @@ Action ComportamientoJugador::think(Sensores sensores) {
         destino.fila       = sensores.destinoF;
         destino.columna    = sensores.destinoC;
 
-		hayPlan = pathFinding(sensores.nivel, actual, destino, plan);
+		hayPlan = pathFinding(sensores, actual, destino, plan);
     }
 
 
@@ -39,8 +39,8 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
 // Llama al algoritmo de busqueda que se usará en cada comportamiento del agente
 // Level representa el comportamiento en el que fue iniciado el agente.
-bool ComportamientoJugador::pathFinding (int level, const estado &origen, const estado &destino, list<Action> &plan){
-	switch (level){
+bool ComportamientoJugador::pathFinding (Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan){
+	switch (sensor.nivel){
 		case 1:
 			cout << "Busqueda en profundad\n";
 			return pathFinding_Profundidad(origen,destino,plan);
@@ -53,7 +53,7 @@ bool ComportamientoJugador::pathFinding (int level, const estado &origen, const 
 
 		case 3:
 			cout << "Busqueda Costo Uniforme\n";
-			return pathFinding_Costo_Uniforme(origen, destino, plan);
+			return pathFinding_Costo_Uniforme(sensor, origen, destino, plan);
 			break;
 
 		case 4:
@@ -272,12 +272,20 @@ bool ComportamientoJugador::pathFinding_Anchura(const estado &origen, const esta
 	else {
 		cout << "F en el chat, no hemos encontrado plan\n";
 	}
-
 }
 
 
-bool ComportamientoJugador::pathFinding_Costo_Uniforme(const estado &origen, const estado &destino, list<Action> &plan) {
+bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan) {
+	cout << "Calculando ruta\n";
+	plan.clear();
 
+	// Idea: meter en una priority queue el nodo a desarrollar junto con el nivel de batería
+	// que ha consumido el plan hasta ahora. Automáticamente se ordenará todo. Solo falta saber cómo hacer eso.
+	// Quizás una estructura específica y le meto un comparador? O puedo hacerlo a pelo?
+	// Andrés del futuro, lo dejo en tus manos. Tú puedes. You can do the thing.
+	auto compara_nivel_bateria = [](){return ;};
+
+	//priority_queue<nodo, int> a_expandir;
 }
 
 
