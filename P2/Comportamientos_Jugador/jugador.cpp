@@ -5,35 +5,35 @@
 #include <cmath>
 #include <set>
 #include <stack>
+#include <queue>
 
 
 // Este es el método principal que debe contener los 4 Comportamientos_Jugador
 // que se piden en la práctica. Tiene como entrada la información de los
 // sensores y devuelve la acción a realizar.
 Action ComportamientoJugador::think(Sensores sensores) {
-	Action accion = actIDLE;
-	// Estoy en el nivel 1
+	if (!hayPlan) {
+        actual.fila        = sensores.posF;
+        actual.columna     = sensores.posC;
+        actual.orientacion = sensores.sentido;
+        destino.fila       = sensores.destinoF;
+        destino.columna    = sensores.destinoC;
 
-	actual.fila        = sensores.posF;
-	actual.columna     = sensores.posC;
-	actual.orientacion = sensores.sentido;
+		hayPlan = pathFinding(sensores.nivel, actual, destino, plan);
+    }
 
-	cout << "Fila: " << actual.fila << endl;
-	cout << "Col : " << actual.columna << endl;
-	cout << "Ori : " << actual.orientacion << endl;
 
-	destino.fila       = sensores.destinoF;
-	destino.columna    = sensores.destinoC;
+	Action siguiente_accion = actIDLE;
 
-	if (sensores.nivel != 4){
-		bool hay_plan = pathFinding (sensores.nivel, actual, destino, plan);
+	if (hayPlan && plan.size() > 0) {
+		siguiente_accion = plan.front();
+		plan.erase(plan.begin());
 	}
 	else {
-		// Estoy en el nivel 2
-		cout << "Aún no implementado el nivel 2" << endl;
+
 	}
 
-  return accion;
+  	return siguiente_accion;
 }
 
 
@@ -41,30 +41,41 @@ Action ComportamientoJugador::think(Sensores sensores) {
 // Level representa el comportamiento en el que fue iniciado el agente.
 bool ComportamientoJugador::pathFinding (int level, const estado &origen, const estado &destino, list<Action> &plan){
 	switch (level){
-		case 1: cout << "Busqueda en profundad\n";
-			      return pathFinding_Profundidad(origen,destino,plan);
-						break;
-		case 2: cout << "Busqueda en Anchura\n";
-			      // Incluir aqui la llamada al busqueda en anchura
-						break;
-		case 3: cout << "Busqueda Costo Uniforme\n";
-						// Incluir aqui la llamada al busqueda de costo uniforme
-						break;
-		case 4: cout << "Busqueda para el reto\n";
-						// Incluir aqui la llamada al algoritmo de búsqueda usado en el nivel 2
-						break;
+		case 1:
+			cout << "Busqueda en profundad\n";
+			return pathFinding_Profundidad(origen,destino,plan);
+			break;
+
+		case 2:
+			cout << "Busqueda en Anchura\n";
+			return pathFinding_Anchura(origen, destino, plan);
+			break;
+
+		case 3:
+			cout << "Busqueda Costo Uniforme\n";
+			return pathFinding_Costo_Uniforme(origen, destino, plan);
+			break;
+
+		case 4:
+			cout << "Busqueda para el reto\n";
+			return A_estrella(origen, destino, plan);
+			break;
 	}
+
 	cout << "Comportamiento sin implementar\n";
+
 	return false;
 }
 
 
-//---------------------- Implementación de la busqueda en profundidad ---------------------------
+//
+// ───────────────────────────── IMPLEMENTACION DE LA BUSQUEDA EN PROFUNDIDAD ─────
+//
 
 // Dado el código en carácter de una casilla del mapa dice si se puede
 // pasar por ella sin riegos de morir o chocar.
 bool EsObstaculo(unsigned char casilla){
-	if (casilla=='P' or casilla=='M' or casilla =='D')
+	if (casilla=='P' || casilla=='M')
 		return true;
 	else
 	  return false;
@@ -86,21 +97,29 @@ bool ComportamientoJugador::HayObstaculoDelante(estado &st){
 	}
 
 	// Compruebo que no me salgo fuera del rango del mapa
-	if (fil<0 or fil>=mapaResultado.size()) return true;
-	if (col<0 or col>=mapaResultado[0].size()) return true;
+	if (fil<0 || fil>=mapaResultado.size())
+		return true;
+	if (col<0 || col>=mapaResultado[0].size())
+		return true;
 
 	// Miro si en esa casilla hay un obstaculo infranqueable
 	if (!EsObstaculo(mapaResultado[fil][col])){
 		// No hay obstaculo, actualizo el parámetro st poniendo la casilla de delante.
-    st.fila = fil;
-		st.columna = col;
+    	st.fila    = fil;
+    	st.columna = col;
 		return false;
 	}
-	else{
-	  return true;
+	else {
+		return true;
 	}
 }
 
+
+//
+// ──────────────────────────────────────────────────────────── II ─────────
+//   :::::: A L G O R I T M O S : :  :   :    :     :        :          :
+// ──────────────────────────────────────────────────────────────────────
+//
 
 
 
@@ -111,8 +130,8 @@ struct nodo{
 
 struct ComparaEstados{
 	bool operator()(const estado &a, const estado &n) const{
-		if ((a.fila > n.fila) or (a.fila == n.fila and a.columna > n.columna) or
-	      (a.fila == n.fila and a.columna == n.columna and a.orientacion > n.orientacion))
+		if ((a.fila > n.fila) || (a.fila == n.fila && a.columna > n.columna) ||
+	      (a.fila == n.fila && a.columna == n.columna && a.orientacion > n.orientacion))
 			return true;
 		else
 			return false;
@@ -127,17 +146,16 @@ bool ComportamientoJugador::pathFinding_Profundidad(const estado &origen, const 
 	//Borro la lista
 	cout << "Calculando plan\n";
 	plan.clear();
-	set<estado,ComparaEstados> generados; // Lista de Cerrados
-	stack<nodo> pila;											// Lista de Abiertos
+	set<estado,ComparaEstados> generados;   // Lista de Cerrados
+	stack<nodo> pila;						// Lista de Abiertos
 
-  nodo current;
+	nodo current;
 	current.st = origen;
-	current.secuencia.empty();
+	current.secuencia.clear();
 
 	pila.push(current);
 
-  while (!pila.empty() and (current.st.fila!=destino.fila or current.st.columna != destino.columna)){
-
+  	while (!pila.empty() && (current.st.fila != destino.fila || current.st.columna != destino.columna)){
 		pila.pop();
 		generados.insert(current.st);
 
@@ -173,9 +191,9 @@ bool ComportamientoJugador::pathFinding_Profundidad(const estado &origen, const 
 		}
 	}
 
-  cout << "Terminada la busqueda\n";
+  	cout << "Terminada la busqueda\n";
 
-	if (current.st.fila == destino.fila and current.st.columna == destino.columna){
+	if (current.st.fila == destino.fila && current.st.columna == destino.columna){
 		cout << "Cargando el plan\n";
 		plan = current.secuencia;
 		cout << "Longitud del plan: " << plan.size() << endl;
@@ -194,6 +212,78 @@ bool ComportamientoJugador::pathFinding_Profundidad(const estado &origen, const 
 
 
 
+bool ComportamientoJugador::pathFinding_Anchura(const estado &origen, const estado &destino, list<Action> &plan) {
+	cout << "Calculando plan\n";
+	plan.clear();
+
+	set<estado,ComparaEstados> generados;
+	queue<nodo> a_expandir;
+
+	nodo actual;
+	actual.st = origen;
+	actual.secuencia.clear();
+
+	a_expandir.push(actual);
+
+	while (!a_expandir.empty() && (actual.st.fila != destino.fila || actual.st.columna != destino.columna)) {
+		a_expandir.pop();
+		generados.insert(actual.st);
+
+		nodo hijo_TR = actual;
+		hijo_TR.st.orientacion = (hijo_TR.st.orientacion + 1)%4;
+		if (generados.find(hijo_TR.st) == generados.end()) { // Si no está el hijo en la lista de generados
+			hijo_TR.secuencia.push_back(actTURN_R);
+			a_expandir.push(hijo_TR);
+		}
+
+		nodo hijo_TL = actual;
+		hijo_TL.st.orientacion = (hijo_TL.st.orientacion - 1)%4;
+		if (generados.find(hijo_TL.st) == generados.end()) { // Si no está el hijo en la lista de generados
+			hijo_TL.secuencia.push_back(actTURN_L);
+			a_expandir.push(hijo_TL);
+		}
+
+		nodo hijo_foward = actual;
+		if (!HayObstaculoDelante(hijo_foward.st)) {
+			if (generados.find(hijo_foward.st) == generados.end()) {
+				hijo_foward.secuencia.push_back(actFORWARD);
+				a_expandir.push(hijo_foward);
+			}
+		}
+
+		if (!a_expandir.empty()) {
+			actual = a_expandir.front();
+			//cout << "Nodo a analizar:" << actual.st.fila << ", " << actual.st.columna << endl;
+		}
+	}
+
+	cout << "Búsqueda terminada\n";
+
+	if (actual.st.fila == destino.fila && actual.st.columna == destino.columna) {
+		cout << "Cargando plan\n";
+		plan = actual.secuencia;
+
+		cout << "Longitud del plan:" << plan.size() << endl;
+		PintaPlan(plan);
+
+		VisualizaPlan(origen, plan);
+		return true;
+	}
+	else {
+		cout << "F en el chat, no hemos encontrado plan\n";
+	}
+
+}
+
+
+bool ComportamientoJugador::pathFinding_Costo_Uniforme(const estado &origen, const estado &destino, list<Action> &plan) {
+
+}
+
+
+bool ComportamientoJugador::A_estrella(const estado &origen, const estado &destino, list<Action> &plan) {
+
+}
 
 
 
