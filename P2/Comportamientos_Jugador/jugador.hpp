@@ -49,6 +49,8 @@ class ComportamientoJugador : public Comportamiento {
     bool hayPlan;
 
     // Métodos privados de la clase
+    int calcular_costo_bateria(estado state, Action accion, bool zapatillas, bool bikini);
+
     bool pathFinding(Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan);
     bool pathFinding_Profundidad(const estado &origen, const estado &destino, list<Action> &plan);
     bool pathFinding_Anchura(const estado &origen, const estado &destino, list<Action> &plan);

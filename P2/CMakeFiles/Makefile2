@@ -83,11 +83,11 @@ clean: CMakeFiles/motorLib.dir/clean
 # Target rules for target CMakeFiles/BelkanSG.dir
 
 # All Build rule for target.
+CMakeFiles/BelkanSG.dir/all: CMakeFiles/motorLib.dir/all
 CMakeFiles/BelkanSG.dir/all: CMakeFiles/obj3DLib.dir/all
 CMakeFiles/BelkanSG.dir/all: CMakeFiles/GLUILib.dir/all
 CMakeFiles/BelkanSG.dir/all: CMakeFiles/modelosBelkanLib.dir/all
 CMakeFiles/BelkanSG.dir/all: CMakeFiles/comportamientosLib.dir/all
-CMakeFiles/BelkanSG.dir/all: CMakeFiles/motorLib.dir/all
 	$(MAKE) -f CMakeFiles/BelkanSG.dir/build.make CMakeFiles/BelkanSG.dir/depend
 	$(MAKE) -f CMakeFiles/BelkanSG.dir/build.make CMakeFiles/BelkanSG.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/CMakeFiles --progress-num=3,4 "Built target BelkanSG"
@@ -114,11 +114,11 @@ CMakeFiles/BelkanSG.dir/clean:
 # Target rules for target CMakeFiles/Belkan.dir
 
 # All Build rule for target.
+CMakeFiles/Belkan.dir/all: CMakeFiles/motorLib.dir/all
 CMakeFiles/Belkan.dir/all: CMakeFiles/obj3DLib.dir/all
 CMakeFiles/Belkan.dir/all: CMakeFiles/GLUILib.dir/all
 CMakeFiles/Belkan.dir/all: CMakeFiles/modelosBelkanLib.dir/all
 CMakeFiles/Belkan.dir/all: CMakeFiles/comportamientosLib.dir/all
-CMakeFiles/Belkan.dir/all: CMakeFiles/motorLib.dir/all
 	$(MAKE) -f CMakeFiles/Belkan.dir/build.make CMakeFiles/Belkan.dir/depend
 	$(MAKE) -f CMakeFiles/Belkan.dir/build.make CMakeFiles/Belkan.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/CMakeFiles --progress-num=1,2 "Built target Belkan"

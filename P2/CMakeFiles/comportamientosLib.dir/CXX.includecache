@@ -21,6 +21,8 @@ stack
 -
 queue
 -
+unordered_set
+-
 
 /mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/Comportamientos_Jugador/jugador.hpp
 comportamientos/comportamiento.hpp

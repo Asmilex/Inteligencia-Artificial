@@ -2,6 +2,8 @@
     "files.associations": {
         "list": "cpp",
         "iostream": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "xstddef": "cpp",
+        "unordered_set": "cpp"
     }
 }
