@@ -6,32 +6,12 @@
 
 #IncludeRegexTransform: 
 
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/entidad.cpp
-motorlib/entidad.hpp
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/motorlib/entidad.hpp
-
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/mapa.cpp
-motorlib/mapa.hpp
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/motorlib/mapa.hpp
-
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/monitor.cpp
-motorlib/monitor.hpp
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/motorlib/monitor.hpp
-fstream
--
-
 /mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/motor_grafico.cpp
 motorlib.hpp
 /mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/motorlib.hpp
 glui/glui.h
 -
 dirent.h
--
-
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/motor_juego.cpp
-motorlib.hpp
-/mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artifical/P2/src/motorlib/motorlib.hpp
-unistd.h
 -
 
 Comportamientos_Jugador/aldeano.hpp

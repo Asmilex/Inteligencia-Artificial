@@ -37,6 +37,9 @@ Action ComportamientoJugador::think(Sensores sensores) {
   	return siguiente_accion;
 }
 
+//
+// ────────────────────────────────────────────────────────────── PATHFINDING ─────
+//
 
 // Llama al algoritmo de busqueda que se usará en cada comportamiento del agente
 // Level representa el comportamiento en el que fue iniciado el agente.
@@ -70,8 +73,9 @@ bool ComportamientoJugador::pathFinding (Sensores sensor, const estado &origen, 
 
 
 //
-// ───────────────────────────── IMPLEMENTACION DE LA BUSQUEDA EN PROFUNDIDAD ─────
+// ──────────────────────────────────────────────────────── UTILIDADES VARIAS ─────
 //
+
 
 // Dado el código en carácter de una casilla del mapa dice si se puede
 // pasar por ella sin riegos de morir o chocar.
@@ -117,9 +121,9 @@ bool ComportamientoJugador::HayObstaculoDelante(estado &st){
 
 
 //
-// ──────────────────────────────────────────────────────────── II ─────────
-//   :::::: A L G O R I T M O S : :  :   :    :     :        :          :
-// ──────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────── I ──────────
+//   :::::: P R O F U N D I D A D : :  :   :    :     :        :          :
+// ────────────────────────────────────────────────────────────────────────
 //
 
 
@@ -211,6 +215,11 @@ bool ComportamientoJugador::pathFinding_Profundidad(const estado &origen, const 
 	return false;
 }
 
+//
+// ────────────────────────────────────────────────────── II ──────────
+//   :::::: A N C H U R A : :  :   :    :     :        :          :
+// ────────────────────────────────────────────────────────────────
+//
 
 
 bool ComportamientoJugador::pathFinding_Anchura(const estado &origen, const estado &destino, list<Action> &plan) {
@@ -276,9 +285,16 @@ bool ComportamientoJugador::pathFinding_Anchura(const estado &origen, const esta
 	}
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
 
-int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion,bool zapatillas, bool bikini) {
+//
+// ──────────────────────────────────────────────────────────────────── III ────────
+//   :::::: C O S T O   U N I F O R M E : :  :   :    :     :        :          :
+// ──────────────────────────────────────────────────────────────────────────────
+//
+
+
+
+int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion, bool zapatillas, bool bikini) {
 	int sig_fila = state.fila, sig_col = state.columna;
 
 	if (accion = actFORWARD) {
@@ -307,7 +323,7 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion,bo
 			if (zapatillas)
 				costo = 5;
 			else
-				costo = 500;
+				costo = 50;
 
 			break;
 
@@ -328,7 +344,7 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion,bo
 // ───────────────── ESTRUCTURAS DE DATOS NECESARIAS PARA UNIFORM COST SEARCH ─────
 //
 
-
+	// Extensión de los nodos para contabilizar el gasto de energía.
 	struct nodo_bateria {
 		nodo node;
 		int bateria_restante;
@@ -337,8 +353,8 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion,bo
 	};
 
 
-// ────────────────────────────────────────────────────────────────────────────────
 
+	// Extensión del estado para contabilizar la batería.
 	struct estado_bateria {
 		estado st;
 		int bateria;
@@ -365,8 +381,6 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion,bo
 		}
 	};
 
-// ────────────────────────────────────────────────────────────────────────────────
-
 
 //
 // ─────────────────────────────────────────────────────────── COSTO UNIFORME ─────
@@ -375,9 +389,6 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion,bo
 bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan) {
 	cout << "Calculando ruta\n";
 	plan.clear();
-
-	// Idea: meter en una priority queue el nodo a desarrollar junto con el nivel de batería
-	// que ha consumido el plan hasta ahora. Automáticamente se ordenará todo. Ir desarrollando los más prometedores.
 
 	stack<nodo_bateria> a_expandir;
 
@@ -393,38 +404,28 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 //
 
 	unordered_set<estado_bateria, hash_estado_bateria> generados;
-	list<nodo_bateria> llegan_destino;
-
-	bool es_redundante = false;
-
+	nodo_bateria mejor_solucion = {};
 
 //
 // ─────────────────────────────────────────────── OPTIMIZACION DE VIABILIDAD ─────
 //
 
-	auto comprobar_viabilidad = [&generados, &llegan_destino, destino](nodo_bateria actual) {
+	auto comprobar_viabilidad = [&generados, &mejor_solucion, destino](nodo_bateria actual) {
 		bool es_viable = true;
 
 		if (actual.bateria_restante < 0){
 			es_viable = false;
 		}
-		else if (actual.node.st.fila == destino.fila && actual.node.st.columna == destino.columna) {
-			// Comprobación rápida mediante soluciones.
-			for (auto solucion: llegan_destino) {
-				if (solucion.bateria_restante > actual.bateria_restante) {
-					es_viable = false;
-					break;
-				}
-			}
-		}
+		else if (mejor_solucion.bateria_restante > actual.bateria_restante)
+			es_viable = false;
 
-		if (es_viable) {
-			for (auto elemento: generados) {
+		else {
+			for (const auto elemento: generados) {
 				if (	elemento.st.fila == actual.node.st.fila
 					&&  elemento.st.columna == actual.node.st.columna
 					&& 	elemento.st.orientacion == actual.node.st.orientacion
-					&&	elemento.zapatillas == actual.zapatillas
-					&& 	elemento.bikini == actual.bikini
+					//&&	elemento.zapatillas == actual.zapatillas
+					//&& 	elemento.bikini == actual.bikini
 					&& 	elemento.bateria >= actual.bateria_restante) {
 
 					es_viable = false;
@@ -437,11 +438,32 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 	};
 
 
+	// Para reducir el número de elementos a comprobar en la búsqueda, optimizamos la inserción
+	auto insercion_optimizada = [&generados](nodo_bateria actual) {
+		auto elemento = generados.begin();
+		for (elemento; elemento != generados.end(); elemento++) {
+			if (	elemento->st.fila == actual.node.st.fila && elemento->st.columna == actual.node.st.columna
+				&&  elemento->st.orientacion == actual.node.st.orientacion
+				/* && 	elemento->zapatillas == actual.zapatillas && elemento->bikini == actual.bikini */) {
+
+					break;
+			}
+		}
+		if (elemento == generados.end()) {
+			generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
+		}
+		else if (elemento->bateria < actual.bateria_restante && actual.bateria_restante >= 0) {
+			generados.erase(elemento);
+			generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
+		}
+	};
+
+
 //
 // ──────────────────────────────────────────── BUCLE PRINCIPAL DEL ALGORITMO ─────
 //
 
-	while (!a_expandir.empty()) {		// Considero que hay que buscar el óptimo para batería. Debo analizar todos.
+	while (!a_expandir.empty()) {
 		/*
 		 	Estructura de desarrollo de los hijos:
 			Plantear un nuevo nodo con los datos del actual. Cambiar orientación o dar paso hacia adelante.
@@ -450,29 +472,18 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 			Debemos tener en cuenta que podríamos haber cogido las zapatillas o el bikini. Si es así,
 			el consumo se reducirá, y se debe actualizar su presencia en los nodos.
 		*/
+
+
 		a_expandir.pop();
-		//cout << "Elementos restantes por analizar: " << a_expandir.size() << ". Nodo actual: (" << actual.node.st.fila << ", "
-			//<< actual.node.st.columna << ", O=" << actual.node.st.orientacion << ", bateria = " << actual.bateria_restante << "z="
-			//<< actual.zapatillas << ", b=" << actual.bikini << ")\n";
-
-		generados.insert({actual.node.st, actual.bateria_restante, actual.bikini, actual.zapatillas});
-
-
-		//acelerar soluciones mirando consumos de batería de las soluciones
-		bool debe_analizarse = true;
-
-		for (auto elemento: llegan_destino) {
-			if (actual.bateria_restante <= elemento.bateria_restante)
-				debe_analizarse = false;
-		}
+		insercion_optimizada(actual);
 
 		if (	actual.node.st.fila == destino.fila && actual.node.st.columna == destino.columna
-			&&  actual.bateria_restante >= 0) {
+			&&  actual.bateria_restante >= 0 && mejor_solucion.bateria_restante < actual.bateria_restante) {
 
-			llegan_destino.push_back(actual);
-			cout << "Solución encontrada:" << actual.node.st.fila << ", " << actual.node.st.columna << ". Batería: "<< actual.bateria_restante <<endl;
+			mejor_solucion = actual;
+			cout << "Nueva solución encontrada:" << actual.node.st.fila << ", " << actual.node.st.columna << ". Batería: "<< actual.bateria_restante << ". Por expandir: " << a_expandir.size() << ". Generados: " << generados.size() << endl;
 		}
-		else if (actual.bateria_restante > 0 && debe_analizarse) {
+		else if (actual.bateria_restante > 0) {
 
 		//
 		// ────────────────────────────────────────────── HIJO DERECHA ─────
@@ -482,8 +493,7 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 			hijo_TR.node.st.orientacion = (hijo_TR.node.st.orientacion + 1)%4;
 			hijo_TR.bateria_restante -= calcular_costo_bateria(hijo_TR.node.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
 
-			if (comprobar_viabilidad(hijo_TR)) {
-				//cout << "Nuevo nodo encontrado. Elementos restantes por expandir:" << a_expandir.size() << ". Elementos en el grupo de generados: " << generados.size() << endl;
+			if (actual.bateria_restante > mejor_solucion.bateria_restante && comprobar_viabilidad(hijo_TR)) {
 				hijo_TR.node.secuencia.push_back(actTURN_R);
 				a_expandir.push(hijo_TR);
 			}
@@ -496,8 +506,7 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 			hijo_TL.node.st.orientacion = (hijo_TL.node.st.orientacion + 3)%4;
 			hijo_TL.bateria_restante -= calcular_costo_bateria(hijo_TL.node.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
 
-			if (comprobar_viabilidad(hijo_TL)) {
-				//cout << "Nuevo nodo encontrado. Elementos restantes por expandir:" << a_expandir.size() << ". Elementos en el grupo de generados: " << generados.size() << endl;
+			if (actual.bateria_restante > mejor_solucion.bateria_restante && comprobar_viabilidad(hijo_TL)) {
 				hijo_TL.node.secuencia.push_back(actTURN_L);
 				a_expandir.push(hijo_TL);
 			}
@@ -512,17 +521,8 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 			nodo_bateria hijo_forward = actual;
 			hijo_forward.bateria_restante -= calcular_costo_bateria(hijo_forward.node.st, actFORWARD, hijo_forward.zapatillas, hijo_forward.bikini);
 
-			// Comprobar que merece la pena seguir expandiendo este nodo: si ha llegado a un consumo
-			// mayor al de una posible solución, parar.
-			bool expandir = true;
 
-			for (auto solucion: llegan_destino) {
-				if (solucion.bateria_restante > hijo_forward.bateria_restante) {
-					expandir = false;
-				}
-			}
-
-			if (expandir && !HayObstaculoDelante(hijo_forward.node.st)) {
+			if (!HayObstaculoDelante(hijo_forward.node.st) && actual.bateria_restante > mejor_solucion.bateria_restante && comprobar_viabilidad(hijo_forward)) {
 				hijo_forward.node.secuencia.push_back(actFORWARD);
 
 				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'K')
@@ -537,22 +537,16 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 		if (!a_expandir.empty()) {
 			actual = a_expandir.top();
 		}
+
+/* 		// FIXME
+		PintaPlan(actual.node.secuencia);
+		cout << "Batería restante:  " << actual.bateria_restante << endl;
+		VisualizaPlan(origen, actual.node.secuencia); */
 	}
 
-	cout << "Búsqueda terminada. Tamaño del conjunto de casillas analizadas: " << generados.size() << "\n";
-	cout << "Tamaño del conjunto de caminos que han llegado al destino:" << llegan_destino.size() << endl;
-
-	if (llegan_destino.size() > 0) {
-		nodo_bateria camino = llegan_destino.front();
-
-		for (auto elemento: llegan_destino) {
-			if (elemento.bateria_restante > camino.bateria_restante)
-				camino = elemento;
-		}
-
-
+	if (mejor_solucion.bateria_restante >= 0) {
 		cout << "Cargando plan\n";
-		plan = camino.node.secuencia;
+		plan = mejor_solucion.node.secuencia;
 
 		cout << "Longitud del plan:" << plan.size() << endl;
 		PintaPlan(plan);
