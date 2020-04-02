@@ -121,6 +121,44 @@
 </category>
 
 <category>
+    <pattern> ^ <set>tener_condicional</set> ^ el (dia) <set>number</set> de *  por la <set>franja</set> ^</pattern>
+    <template>
+        <think>
+            <set name="dia">
+                <star index="4"/>
+            </set>
+
+            <set name="mes_letra">
+                <star index="5"/>
+            </set>
+
+            <set name="mes_index">
+                <map name="month_index_ES"><get name="mes_letra"/></map>
+            </set>
+
+            <set name="fecha">
+                <map name="anade_cero"><get name="dia"/></map>-<get name="mes_index"/>-20
+            </set>
+
+            <set name = "franja">
+                <star index="6"/>
+            </set>
+
+        </think>
+
+        <condition name = "franja">
+            <li value="manana">
+                <srai> COMPROBAR HORAS MANANA <get name="fecha"/> Y RESPONDER</srai>
+            </li>
+            <li value="tarde">
+                <srai> COMPROBAR HORAS TARDE <get name="fecha"/> Y RESPONDER </srai>
+            </li>
+        </condition>
+    </template>
+</category>
+
+
+<category>
     <pattern> ^ <set>tener_condicional</set> ^ el [proximo siguiente] <set>weekday_es</set> a las *</pattern>
     <template>
         <think>

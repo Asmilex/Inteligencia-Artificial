@@ -136,9 +136,11 @@
 <category>
     <pattern> No </pattern>
     <template>
-        <set name="horas_disponibles">
-            <srai> REMOVE 1 FIRST ELEMENT FROM <get name="horas_disponibles"/> </srai>
-        </set>
+        <think>
+            <set name="horas_disponibles">
+                <srai>REMOVE 1 FIRST ELEMENTS FROM <get name="horas_disponibles"/></srai>
+            </set>
+        </think>
         <srai> Me da igual </srai>
     </template>
 </category>

@@ -56,7 +56,7 @@
 <category>
     <pattern> COMPROBAR HORAS MANANA * Y RESPONDER </pattern>
     <template>
-            <srai> COMPROBAR HORAS TARDE <star index="1"/> </srai>
+            <srai> COMPROBAR HORAS MANANA <star index="1"/> </srai>
         <srai> PRESENTAR HORAS DISPONIBLES </srai>
     </template>
 </category>
@@ -89,9 +89,12 @@
 <category>
     <pattern> COMPROBAR HORAS DIA * DESDE * HASTA * </pattern>
     <template>
-        <think>
             <set var="listado_sucio">
                 <srai> LIST OF DAY <star index="1"/> </srai>
+            </set>
+
+           <set var="listado_sucio">
+                <srai>SUBLIST FROM <srai>PLUS <star index="2"/> 1</srai> TO <srai>PLUS <star index="3"/> 1</srai> OF <get var="listado_sucio"/></srai>
             </set>
 
             <set var="iterador"><star index="2"/></set>
@@ -110,13 +113,8 @@
 
                 <li value="null">
                     <!-- Hora disponible => sacar a la lista -->
-
                     <set name="horas_disponibles">
                         <get name="horas_disponibles"/> <map name="anade_cero"><get var="iterador"/></map>:00
-                    </set>
-
-                    <set var="parar_comparar">
-                        <srai>COMPARE <get var="iterador"/> WITH <star index="3"/></srai>
                     </set>
 
                     <set var="iterador">
@@ -126,11 +124,6 @@
                     <set var="item">
                         <srai> NEXT </srai>
                     </set>
-
-                    <!-- Ha tocado el límite superior, no hacer más-->
-                    <condition var="parar_comparar" value="YES">
-                        <set var="item">end</set>
-                    </condition>
 
                     <set name="hay_hueco">true</set>
 
@@ -148,15 +141,16 @@
                         <srai> NEXT </srai>
                     </set>
 
-                    <!-- Ha tocado el límite superior, no hacer más-->
-                    <condition var="parar_comparar" value="YES">
-                        <set var="item">end</set>
-                    </condition>
-
                     <loop/>
                 </li>
             </condition>
-        </think>
+    </template>
+</category>
+
+<category>
+    <pattern> prueba12 </pattern>
+    <template>
+        <srai>SUBLIST FROM 2 TO 4 OF null ocupado ocupado null</srai>
     </template>
 </category>
 
