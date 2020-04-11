@@ -193,6 +193,52 @@
     </template>
 </category>
 
+
+<category>
+    <pattern> ^ <set>tener_condicional</set> ^ el (dia) <set>number</set> de * a las *</pattern>
+    <template>
+        <think>
+            <set name="dia">
+                <star index="4"/>
+            </set>
+
+            <set name="mes_letra">
+                <star index="5"/>
+            </set>
+
+            <set name="mes_index">
+                <map name="month_index_ES"><get name="mes_letra"/></map>
+            </set>
+
+            <set name="fecha">
+                <map name="anade_cero"><get name="dia"/></map>-<get name="mes_index"/>-20
+            </set>
+
+            <set name="hora">
+                <star index="6"/>
+            </set>
+
+            <set var="esta_ocupado">
+                <srai> IS BUSY DAY <get name="fecha"/> AT <get name="hora"/> </srai>
+            </set>
+        </think>
+
+        <condition var="esta_ocupado">
+            <li value="TRUE">
+                No tengo esa hora en específico. Pero te propongo otras.
+                <srai> COMPROBAR HORAS DIA <get name="fecha"/> Y RESPONDER </srai>
+            </li>
+
+            <li value="FALSE">
+                Listo, para ti maquina.
+                <srai> a las <get name="hora"/> </srai>
+            </li>
+        </condition>
+
+    </template>
+</category>
+
+
 <!-- ──────────────────────────────────────────────────────────────────────────────── -->
 <!-- Fallbacks en caso de que se omita el tener_condicional-->
 

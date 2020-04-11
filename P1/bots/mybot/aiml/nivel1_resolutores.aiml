@@ -12,7 +12,7 @@
                 A que hora quieres
             </li>
             <li value="false">
-                Lo siento, no tengo hueco ese día. Quieres otro?
+                Lo siento, no tengo hueco ese día a las horas especificadas. Quieres otro día o franja horaria?
             </li>
         </condition>
     </template>
