@@ -291,7 +291,51 @@ bool ComportamientoJugador::pathFinding_Anchura(const estado &origen, const esta
 //   :::::: C O S T O   U N I F O R M E : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────────────────────────
 //
+//
+// ───────────────── ESTRUCTURAS DE DATOS NECESARIAS PARA UNIFORM COST SEARCH ─────
+//
 
+	// Extensión de los nodos para contabilizar el gasto de energía.
+	struct nodo_bateria {
+		nodo node;
+		int bateria_restante;
+		bool zapatillas;
+		bool bikini;
+	};
+
+
+
+	// Extensión del estado para contabilizar la batería.
+	struct estado_bateria {
+		estado st;
+		int bateria;
+		bool zapatillas;
+		bool bikini;
+
+		bool operator==(const estado_bateria& otro) const {
+			return 		st.fila == otro.st.fila
+					&& 	st.columna == otro.st.columna
+					&&  st.orientacion == otro.st.orientacion
+					&& 	bateria == otro.bateria
+					&& 	zapatillas == otro.zapatillas
+					&& 	bikini == otro.bikini;
+		}
+	};
+
+	// Estructura:
+	// Bateria -> b, fila -> f, columna -> c, zapatilla -> z, bikini -> b
+	// bbbbffcczb
+	struct hash_estado_bateria {
+		size_t operator()(const estado_bateria& state) const {
+			return 		state.bateria * 1000000 + state.st.fila * 10000 +
+					+ 	state.st.columna * 100 + state.zapatillas * 10 + state.bikini;
+		}
+	};
+
+
+//
+// ───────────────────────────────────────────────────── FUNCIONES AUXILIARES ─────
+//
 
 
 int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion, bool zapatillas, bool bikini) {
@@ -339,48 +383,9 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion, b
 	return costo;
 }
 
-
-//
-// ───────────────── ESTRUCTURAS DE DATOS NECESARIAS PARA UNIFORM COST SEARCH ─────
-//
-
-	// Extensión de los nodos para contabilizar el gasto de energía.
-	struct nodo_bateria {
-		nodo node;
-		int bateria_restante;
-		bool zapatillas;
-		bool bikini;
-	};
-
-
-
-	// Extensión del estado para contabilizar la batería.
-	struct estado_bateria {
-		estado st;
-		int bateria;
-		bool zapatillas;
-		bool bikini;
-
-		bool operator==(const estado_bateria& otro) const {
-			return 		st.fila == otro.st.fila
-					&& 	st.columna == otro.st.columna
-					&&  st.orientacion == otro.st.orientacion
-					&& 	bateria == otro.bateria
-					&& 	zapatillas == otro.zapatillas
-					&& 	bikini == otro.bikini;
-		}
-	};
-
-	// Estructura:
-	// Bateria -> b, fila -> f, columna -> c, zapatilla -> z, bikini -> b
-	// bbbbffcczb
-	struct hash_estado_bateria {
-		size_t operator()(const estado_bateria& state) const {
-			return 		state.bateria * 1000000 + state.st.fila * 10000 +
-					+ 	state.st.columna * 100 + state.zapatillas * 10 + state.bikini;
-		}
-	};
-
+double distancia (const nodo_bateria& n, const estado& destino) {
+	return abs(n.node.st.fila - destino.fila) + abs(n.node.st.columna - destino.columna);
+};
 
 //
 // ─────────────────────────────────────────────────────────── COSTO UNIFORME ─────
@@ -390,18 +395,17 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 	cout << "Calculando ruta\n";
 	plan.clear();
 
-	stack<nodo_bateria> a_expandir;
 
-	nodo node;
-	node.st = origen;
-	node.secuencia.clear();
-
-	nodo_bateria actual = {node, sensor.bateria, false, false};
-	a_expandir.push(actual);
 
 //
-// ──────────────────────────────────── CONJUNTO ORDENADO DE NODOS ANALIZADOS ─────
+// ─────────────────────────────────────────────── ESTRUCTURAS DE DATOS CLAVE ─────
 //
+
+	auto prioridad_nodo_bateria = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
+		return distancia(n1, destino) + n1.bateria_restante < distancia(n2, destino) + n2.bateria_restante ;
+	};
+
+	priority_queue<nodo_bateria, vector<nodo_bateria>, decltype(prioridad_nodo_bateria)> a_expandir(prioridad_nodo_bateria);
 
 	unordered_set<estado_bateria, hash_estado_bateria> generados;
 	nodo_bateria mejor_solucion = {};
@@ -449,6 +453,7 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 					break;
 			}
 		}
+
 		if (elemento == generados.end()) {
 			generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
 		}
@@ -462,6 +467,13 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 //
 // ──────────────────────────────────────────── BUCLE PRINCIPAL DEL ALGORITMO ─────
 //
+
+	nodo node;
+	node.st = origen;
+	node.secuencia.clear();
+
+	nodo_bateria actual = {node, sensor.bateria, false, false};
+	a_expandir.push(actual);
 
 	while (!a_expandir.empty()) {
 		/*
