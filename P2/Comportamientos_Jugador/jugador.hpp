@@ -42,6 +42,7 @@ class ComportamientoJugador : public Comportamiento {
   private:
     // Declarar Variables de Estado
     int fil, col, brujula;
+    bool zapatillas = false, bikini = false;
     estado actual, destino;
     list<Action> plan;
 
@@ -57,6 +58,9 @@ class ComportamientoJugador : public Comportamiento {
     bool pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan);
     bool A_estrella(const estado &origen, const estado &destino, list<Action> &plan);
 
+    void actualizar_mapaResultado (Sensores sensor);
+    pair<int, int> hay_powerups_cerca (Sensores sensor);
+    bool hay_NPC_delante(Sensores sensor);
 
     void PintaPlan(list<Action> plan);
     bool HayObstaculoDelante(estado &st);
