@@ -35,13 +35,21 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
 	// No se hacen funciones con efectos secundarios @profesores
 	estado copia_actual = actual;
+	int bateria_CU;
 
-	if (	(plan.empty())
+	if (	plan.empty()
 		||  (plan.size() > 0 && plan.front() == actFORWARD && HayObstaculoDelante(copia_actual))
 		||  hay_NPC_delante(sensores)) {
 
-		hayPlan = pathFinding(sensores, actual, destino, plan);
+		if (sensores.nivel != 3)
+			hayPlan = pathFinding(sensores, actual, destino, plan);
+		else if (sensores.nivel == 3) {
+			cout << "Cargando costo uniforme\n";
+			hayPlan = pathFinding_Costo_Uniforme(sensores, actual, destino, plan, bateria_CU);
+			cout << "Plan origen - destino batería: " << bateria_CU << endl << endl;
+		}
 	}
+
 
 	if (sensores.nivel == 4) {
 		pair<int, int> powerups_cercanos = hay_powerups_cerca(sensores);
@@ -52,6 +60,60 @@ Action ComportamientoJugador::think(Sensores sensores) {
 			destino_temp.columna = powerups_cercanos.second;
 
 			hayPlan = pathFinding(sensores, actual, destino_temp, plan);
+		}
+	}
+
+	if (sensores.nivel == 3 && !recargas_calculadas_CU) {
+		recargas_calculadas_CU = true;
+
+		// Origen - recarga, recarga - destino
+		list<Action> plan_OR, plan_RD;
+
+		for (int i = 0; i < 100; i++) {
+			for (int j = 0; j < 100; j++) {
+				if (mapaResultado[i][j] == 'X') {
+					estado estado_temp;
+					estado_temp.fila    = i;
+					estado_temp.columna = j;
+					estado_temp.orientacion = -1;
+
+					int bateria_OR, bateria_RD;
+
+					cout << "Cargando plan origen - recarga\n";
+					pathFinding_Costo_Uniforme(sensores, actual, estado_temp, plan_OR, bateria_OR);
+					cout << "Plan origen - recarga bateria: " << bateria_OR << endl << endl;
+
+					// Mirar si se puede llegar
+					if (bateria_OR > 0) {
+						estado_temp.orientacion = actual.orientacion;
+						
+						// Mirar si se gasta menos yendo a la recarga y luego al destino
+						cout << "Cargando plan recarga - destino\n";
+						pathFinding_Costo_Uniforme(sensores, estado_temp, destino, plan_RD, bateria_RD);
+						cout << "Plan recarga - destino bateria: " << bateria_RD << endl << endl;
+
+
+						if (bateria_RD > bateria_CU) {
+							cout << "Hemos encontrado una solución mejor yendo a la recarga primero\n";
+							// Hemos encontrado una solución mejor; actualizar la antigua quedándonos en idle en la casilla de recarga
+							plan.clear();
+
+							plan.insert(plan.begin(), plan_OR.begin(), plan_OR.end());
+
+							while (bateria_OR < 3000) {
+								plan.push_back(actIDLE);
+								bateria_OR += 10;
+							}
+
+							for (auto accion: plan_RD)
+								plan.push_back(accion);
+
+							PintaPlan(plan);
+							VisualizaPlan(actual, plan);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -86,12 +148,13 @@ bool ComportamientoJugador::pathFinding (Sensores sensor, const estado &origen, 
 
 		case 3:
 			cout << "Busqueda Costo Uniforme\n";
-			return pathFinding_Costo_Uniforme(sensor, origen, destino, plan);
+			int bateria;
+			return pathFinding_Costo_Uniforme(sensor, origen, destino, plan, bateria);
 			break;
 
 		case 4:
 			cout << "Busqueda para el reto\n";
-			return A_estrella(origen, destino, plan);
+			return A_estrella(origen, destino, plan, sensor);
 			break;
 	}
 
@@ -368,12 +431,13 @@ bool ComportamientoJugador::pathFinding_Anchura(const estado &origen, const esta
 	};
 
 	// Estructura:
-	// Bateria -> b, fila -> f, columna -> c, zapatilla -> z, bikini -> b
-	// bbbbffcczb
+	// Bateria -> B, fila -> f, columna -> c, zapatilla -> z, bikini -> b
+	// ffccBBBBzb
 	struct hash_estado_bateria {
 		size_t operator()(const estado_bateria& state) const {
-			return 		state.bateria * 1000000 + state.st.fila * 10000 +
-					+ 	state.st.columna * 100 + state.zapatillas * 10 + state.bikini;
+			return 		state.st.fila * 100000000 + state.st.columna * 1000000
+					+ 	state.bateria * 100
+					+   state.zapatillas * 10 + state.bikini;
 		}
 	};
 
@@ -439,7 +503,7 @@ double distancia (int fila_0, int columna_0, int fila_destino, int columna_desti
 // ─────────────────────────────────────────────────────────── COSTO UNIFORME ─────
 //
 
-bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan) {
+bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan, int &bateria_CU) {
 	cout << "Calculando ruta\n";
 	plan.clear();
 
@@ -504,6 +568,7 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 			}
 		}
 
+
 		if (elemento == generados.end()) {
 			generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
 		}
@@ -543,6 +608,7 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 			&&  actual.bateria_restante >= 0 && mejor_solucion.bateria_restante < actual.bateria_restante) {
 
 			mejor_solucion = actual;
+			bateria_CU = actual.bateria_restante;
 			cout << "Nueva solución encontrada:" << actual.node.st.fila << ", " << actual.node.st.columna << ". Batería: "<< actual.bateria_restante << ". Por expandir: " << a_expandir.size() << ". Generados: " << generados.size() << endl;
 		}
 		else if (actual.bateria_restante > 0) {
@@ -609,6 +675,8 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 		PintaPlan(plan);
 
 		VisualizaPlan(origen, plan);
+
+		cout << "Dev. Batería: " << bateria_CU << endl;
 		return true;
 	}
 	else {
@@ -631,28 +699,28 @@ void ComportamientoJugador::actualizar_mapaResultado (Sensores sensor) {
 		for(size_t j = 0; j <= i*2; j++ ) {
 			switch (sensor.sentido) {
 				case 0:
-					if (mapaResultado[sensor.posF - i][sensor.posC - i + j] == '?')
+					if (sensor.posC - i + j < 100 && mapaResultado[sensor.posF - i][sensor.posC - i + j] == '?')
 						mapaResultado[sensor.posF - i][sensor.posC - i + j] = sensor.terreno[k];
 
 					k++;
 					break;
 
 				case 1:
-					if (mapaResultado[sensor.posF - i + j][sensor.posC + i] == '?')
+					if (sensor.posC - i + j < 100 && sensor.posC + i < 100 && mapaResultado[sensor.posF - i + j][sensor.posC + i] == '?')
 						mapaResultado[sensor.posF - i + j][sensor.posC + i] = sensor.terreno[k];
 
 					k++;
 					break;
 
 				case 2:
-					if (mapaResultado[sensor.posF + i][sensor.posC + i - j] == '?')
+					if (sensor.posF + i < 100 && sensor.posC + i - j < 100 && mapaResultado[sensor.posF + i][sensor.posC + i - j] == '?')
 						mapaResultado[sensor.posF + i][sensor.posC + i - j] = sensor.terreno[k];
 
 					k++;
 					break;
 
 				case 3:
-					if (mapaResultado[sensor.posF + i - j][sensor.posC - i] == '?')
+					if (sensor.posF + i - j < 100 && mapaResultado[sensor.posF + i - j][sensor.posC - i] == '?')
 						mapaResultado[sensor.posF + i - j][sensor.posC - i] = sensor.terreno[k];
 
 					k++;
@@ -719,7 +787,7 @@ pair<int, int> ComportamientoJugador::hay_powerups_cerca (Sensores sensor) {
 }
 
 
-bool ComportamientoJugador::A_estrella(const estado &origen, const estado &destino, list<Action> &plan) {
+bool ComportamientoJugador::A_estrella(const estado &origen, const estado &destino, list<Action> &plan, const Sensores &sensor) {
 	cout << "Calculando ruta\n";
 	plan.clear();
 
@@ -768,7 +836,16 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 		}
 
 		nodo hijo_forward = actual;
-		if (!HayObstaculoDelante(hijo_forward.st)) {
+		// Comrpobar que en la casilla de delante del origen no hay un NPC
+		int sig_fila_origen = origen.fila, sig_col_origen = origen.columna;
+		switch (origen.orientacion) {
+			case 0: sig_fila_origen--; break;
+			case 1: sig_col_origen++; break;
+			case 2: sig_fila_origen++; break;
+			case 3: sig_col_origen--; break;
+		};
+
+		if (	!HayObstaculoDelante(hijo_forward.st)) {
 			if (generados.find(hijo_forward.st) == generados.end()) {
 				hijo_forward.secuencia.push_back(actFORWARD);
 				a_expandir.push(hijo_forward);

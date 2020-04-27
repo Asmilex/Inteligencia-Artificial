@@ -48,6 +48,7 @@ class ComportamientoJugador : public Comportamiento {
 
     Action ultimaAccion;
     bool hayPlan;
+    bool recargas_calculadas_CU = false;
 
     // Métodos privados de la clase
     int calcular_costo_bateria(estado state, Action accion, bool zapatillas, bool bikini);
@@ -55,8 +56,8 @@ class ComportamientoJugador : public Comportamiento {
     bool pathFinding(Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan);
     bool pathFinding_Profundidad(const estado &origen, const estado &destino, list<Action> &plan);
     bool pathFinding_Anchura(const estado &origen, const estado &destino, list<Action> &plan);
-    bool pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan);
-    bool A_estrella(const estado &origen, const estado &destino, list<Action> &plan);
+    bool pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan, int &bateria);
+    bool A_estrella(const estado &origen, const estado &destino, list<Action> &plan, const Sensores & sensor);
 
     void actualizar_mapaResultado (Sensores sensor);
     pair<int, int> hay_powerups_cerca (Sensores sensor);
