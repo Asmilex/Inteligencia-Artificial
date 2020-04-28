@@ -60,17 +60,13 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
 				if (es_recarga) {
 					int lvl_bateria = sensores.bateria;
-					while (lvl_bateria < 2000) {
+
+					while (lvl_bateria < max(int(sensores.tiempo*2), 2000)) {
 						plan.push_back(actIDLE);
 						lvl_bateria += 10;
 					}
 				}
 			}
-		}
-
-
-		if (sensores.bateria < 1000) {
-
 		}
 	}
 
@@ -807,8 +803,9 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 			case 3: sig_col_origen--; break;
 		};
 
-		if (	!HayObstaculoDelante(hijo_forward.st)) {
-			if (generados.find(hijo_forward.st) == generados.end()) {
+		if ( !HayObstaculoDelante(hijo_forward.st)) {
+			if ( generados.find(hijo_forward.st) == generados.end() ) {
+
 				hijo_forward.secuencia.push_back(actFORWARD);
 				a_expandir.push(hijo_forward);
 			}
@@ -816,7 +813,11 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 
 		if (!a_expandir.empty()) {
 			actual = a_expandir.top();
-			//cout << "Nodo a analizar:" << actual.st.fila << ", " << actual.st.columna << endl;
+
+			if (actual.st.fila == sig_fila_origen && actual.st.columna == sig_col_origen && hay_NPC_delante(sensor) && !a_expandir.empty()) {
+				a_expandir.pop();
+				actual = a_expandir.top();
+			}
 		}
 	}
 
