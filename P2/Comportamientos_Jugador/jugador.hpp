@@ -56,7 +56,7 @@ class ComportamientoJugador : public Comportamiento {
     bool pathFinding(Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan);
     bool pathFinding_Profundidad(const estado &origen, const estado &destino, list<Action> &plan);
     bool pathFinding_Anchura(const estado &origen, const estado &destino, list<Action> &plan);
-    bool pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan, int &bateria);
+    bool pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan);
     bool A_estrella(const estado &origen, const estado &destino, list<Action> &plan, const Sensores & sensor);
 
     void actualizar_mapaResultado (Sensores sensor);

@@ -35,19 +35,12 @@ Action ComportamientoJugador::think(Sensores sensores) {
 
 	// No se hacen funciones con efectos secundarios @profesores
 	estado copia_actual = actual;
-	int bateria_CU;
 
 	if (	plan.empty()
 		||  (plan.size() > 0 && plan.front() == actFORWARD && HayObstaculoDelante(copia_actual))
 		||  hay_NPC_delante(sensores)) {
 
-		if (sensores.nivel != 3)
-			hayPlan = pathFinding(sensores, actual, destino, plan);
-		else if (sensores.nivel == 3) {
-			cout << "Cargando costo uniforme\n";
-			hayPlan = pathFinding_Costo_Uniforme(sensores, actual, destino, plan, bateria_CU);
-			cout << "Plan origen - destino batería: " << bateria_CU << endl << endl;
-		}
+		hayPlan = pathFinding(sensores, actual, destino, plan);
 	}
 
 
@@ -59,66 +52,29 @@ Action ComportamientoJugador::think(Sensores sensores) {
 			destino_temp.fila = powerups_cercanos.first;
 			destino_temp.columna = powerups_cercanos.second;
 
-			hayPlan = pathFinding(sensores, actual, destino_temp, plan);
-		}
-	}
+			bool es_recarga = mapaResultado[powerups_cercanos.first][powerups_cercanos.second] == 'X';
 
-	if (sensores.nivel == 3 && !recargas_calculadas_CU) {
-		recargas_calculadas_CU = true;
-
-		// Origen - recarga, recarga - destino
-		list<Action> plan_OR, plan_RD;
-
-		for (int i = 0; i < 100; i++) {
-			for (int j = 0; j < 100; j++) {
-				if (mapaResultado[i][j] == 'X') {
-					estado estado_temp;
-					estado_temp.fila    = i;
-					estado_temp.columna = j;
-					estado_temp.orientacion = -1;
-
-					int bateria_OR, bateria_RD;
-
-					cout << "Cargando plan origen - recarga\n";
-					pathFinding_Costo_Uniforme(sensores, actual, estado_temp, plan_OR, bateria_OR);
-					cout << "Plan origen - recarga bateria: " << bateria_OR << endl << endl;
-
-					// Mirar si se puede llegar
-					if (bateria_OR > 0) {
-						estado_temp.orientacion = actual.orientacion;
-						
-						// Mirar si se gasta menos yendo a la recarga y luego al destino
-						cout << "Cargando plan recarga - destino\n";
-						pathFinding_Costo_Uniforme(sensores, estado_temp, destino, plan_RD, bateria_RD);
-						cout << "Plan recarga - destino bateria: " << bateria_RD << endl << endl;
+			if (!es_recarga	|| (es_recarga && sensores.bateria < 1000)) {
+				hayPlan = pathFinding(sensores, actual, destino_temp, plan);
 
 
-						if (bateria_RD > bateria_CU) {
-							cout << "Hemos encontrado una solución mejor yendo a la recarga primero\n";
-							// Hemos encontrado una solución mejor; actualizar la antigua quedándonos en idle en la casilla de recarga
-							plan.clear();
-
-							plan.insert(plan.begin(), plan_OR.begin(), plan_OR.end());
-
-							while (bateria_OR < 3000) {
-								plan.push_back(actIDLE);
-								bateria_OR += 10;
-							}
-
-							for (auto accion: plan_RD)
-								plan.push_back(accion);
-
-							PintaPlan(plan);
-							VisualizaPlan(actual, plan);
-						}
+				if (es_recarga) {
+					int lvl_bateria = sensores.bateria;
+					while (lvl_bateria < 2000) {
+						plan.push_back(actIDLE);
+						lvl_bateria += 10;
 					}
 				}
 			}
 		}
+
+
+		if (sensores.bateria < 1000) {
+
+		}
 	}
 
 	Action siguiente_accion = actIDLE;
-
 
 	if (hayPlan && plan.size() > 0) {
 		siguiente_accion = plan.front();
@@ -149,7 +105,7 @@ bool ComportamientoJugador::pathFinding (Sensores sensor, const estado &origen, 
 		case 3:
 			cout << "Busqueda Costo Uniforme\n";
 			int bateria;
-			return pathFinding_Costo_Uniforme(sensor, origen, destino, plan, bateria);
+			return pathFinding_Costo_Uniforme(sensor, origen, destino, plan);
 			break;
 
 		case 4:
@@ -503,7 +459,7 @@ double distancia (int fila_0, int columna_0, int fila_destino, int columna_desti
 // ─────────────────────────────────────────────────────────── COSTO UNIFORME ─────
 //
 
-bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan, int &bateria_CU) {
+bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan) {
 	cout << "Calculando ruta\n";
 	plan.clear();
 
@@ -534,9 +490,9 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 		if (actual.bateria_restante < 0){
 			es_viable = false;
 		}
-		else if (mejor_solucion.bateria_restante > actual.bateria_restante) {
+/* 		else if (mejor_solucion.bateria_restante - 1000 > actual.bateria_restante) {
 			es_viable = false;
-		}
+		} */
 		else {
 			for (const auto elemento: generados) {
 				if (	elemento.st.fila == actual.node.st.fila
@@ -608,7 +564,6 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 			&&  actual.bateria_restante >= 0 && mejor_solucion.bateria_restante < actual.bateria_restante) {
 
 			mejor_solucion = actual;
-			bateria_CU = actual.bateria_restante;
 			cout << "Nueva solución encontrada:" << actual.node.st.fila << ", " << actual.node.st.columna << ". Batería: "<< actual.bateria_restante << ". Por expandir: " << a_expandir.size() << ". Generados: " << generados.size() << endl;
 		}
 		else if (actual.bateria_restante > 0) {
@@ -657,6 +612,15 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 					hijo_forward.bikini = true;
 				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'D')
 					hijo_forward.zapatillas = true;
+				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'X') {
+
+					while (hijo_forward.bateria_restante < 3000) {
+						hijo_forward.node.secuencia.push_back(actIDLE);
+						hijo_forward.bateria_restante += 10;
+					}
+
+					hijo_forward.bateria_restante = max(3000, hijo_forward.bateria_restante);
+				}
 
 				a_expandir.push(hijo_forward);
 			}
@@ -676,7 +640,6 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 
 		VisualizaPlan(origen, plan);
 
-		cout << "Dev. Batería: " << bateria_CU << endl;
 		return true;
 	}
 	else {
@@ -738,7 +701,7 @@ pair<int, int> ComportamientoJugador::hay_powerups_cerca (Sensores sensor) {
 		for (size_t j = 0; j <= i*2; j++ ) {
 			switch (sensor.sentido) {
 				case 0:
-					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas)) {
+					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas) || sensor.terreno[k] == 'X') {
 						destino.first = sensor.posF - i;
 						destino.second = sensor.posC - i + j;
 					}
@@ -747,7 +710,7 @@ pair<int, int> ComportamientoJugador::hay_powerups_cerca (Sensores sensor) {
 					break;
 
 				case 1:
-					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas)) {
+					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas) || sensor.terreno[k] == 'X') {
 						destino.first = sensor.posF - i + j;
 						destino.second = sensor.posC + i;
 					}
@@ -756,7 +719,7 @@ pair<int, int> ComportamientoJugador::hay_powerups_cerca (Sensores sensor) {
 					break;
 
 				case 2:
-					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas)) {
+					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas) || sensor.terreno[k] == 'X') {
 						destino.first = sensor.posF + i;
 						destino.second = sensor.posC + i - j;
 					}
@@ -765,7 +728,7 @@ pair<int, int> ComportamientoJugador::hay_powerups_cerca (Sensores sensor) {
 					break;
 
 				case 3:
-					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas)) {
+					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas) || sensor.terreno[k] == 'X') {
 						destino.first = sensor.posF + i - j;
 						destino.second = sensor.posC - i;
 					}
@@ -783,7 +746,6 @@ pair<int, int> ComportamientoJugador::hay_powerups_cerca (Sensores sensor) {
 	}
 
 	return destino;
-
 }
 
 
@@ -930,7 +892,7 @@ void ComportamientoJugador::VisualizaPlan(const estado &st, const list<Action> &
 		else if (*it == actTURN_R){
 			cst.orientacion = (cst.orientacion+1)%4;
 		}
-		else {
+		else if (*it == actTURN_L){
 			cst.orientacion = (cst.orientacion+3)%4;
 		}
 		it++;
