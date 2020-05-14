@@ -37,7 +37,7 @@ Action ComportamientoJugador::think(Sensores sensores) {
 	estado copia_actual = actual;
 
 	if (	plan.empty()
-		||  (plan.size() > 0 && plan.front() == actFORWARD && HayObstaculoDelante(copia_actual))
+		||  (plan.size() > 0 && plan.front() == actFORWARD && HayObstaculoDelante(copia_actual))	// He chocado con algo y no lo tenía previsto.
 		||  hay_NPC_delante(sensores)) {
 
 		hayPlan = pathFinding(sensores, actual, destino, plan);
@@ -164,16 +164,6 @@ bool ComportamientoJugador::HayObstaculoDelante(estado &st){
 }
 
 bool ComportamientoJugador::hay_NPC_delante(Sensores sensor) {
-/* 	int fil=st.fila, col=st.columna;
-
-  // calculo cual es la casilla de delante del agente
-	switch (st.orientacion) {
-		case 0: fil--; break;
-		case 1: col++; break;
-		case 2: fil++; break;
-		case 3: col--; break;
-	} */
-
 	return sensor.superficie[2] == 'a';
 }
 
@@ -380,6 +370,14 @@ bool ComportamientoJugador::pathFinding_Anchura(const estado &origen, const esta
 					&& 	zapatillas == otro.zapatillas
 					&& 	bikini == otro.bikini;
 		}
+
+		bool operator< (const estado_bateria& otro) const {
+			if ((st.fila > otro.st.fila) || (st.fila == otro.st.fila && st.columna > otro.st.columna) ||
+		      (st.fila == otro.st.fila && st.columna == otro.st.columna && st.orientacion > otro.st.orientacion))
+				return true;
+			else
+				return false;
+		}
 	};
 
 	// Estructura:
@@ -436,8 +434,13 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion, b
 			costo = 2;
 			break;
 
+		case '?':
+			costo =  5; // Suposición - FIXME
+			break;
+
 		case 'X':
 			costo = -10;
+			break;
 
 		default:
 			costo = 1;
@@ -465,10 +468,8 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 // ─────────────────────────────────────────────── ESTRUCTURAS DE DATOS CLAVE ─────
 //
 
-	auto prioridad_nodo_bateria = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
-		return n1.bateria_restante - distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna)
-					<
-			   n2.bateria_restante - distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) ;
+	auto prioridad_nodo_bateria = [](const nodo_bateria& n1, const nodo_bateria& n2) {
+		return n1.bateria_restante < n2.bateria_restante;
 	};
 
 	priority_queue<nodo_bateria, vector<nodo_bateria>, decltype(prioridad_nodo_bateria)> a_expandir(prioridad_nodo_bateria);
@@ -486,9 +487,6 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 		if (actual.bateria_restante < 0){
 			es_viable = false;
 		}
-/* 		else if (mejor_solucion.bateria_restante - 1000 > actual.bateria_restante) {
-			es_viable = false;
-		} */
 		else {
 			for (const auto elemento: generados) {
 				if (	elemento.st.fila == actual.node.st.fila
@@ -695,43 +693,43 @@ pair<int, int> ComportamientoJugador::hay_powerups_cerca (Sensores sensor) {
 
 	for (size_t i = 0; i < 4; i++) {
 		for (size_t j = 0; j <= i*2; j++ ) {
+			bool condicion_entrada = (sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas) || sensor.terreno[k] == 'X';
+
 			switch (sensor.sentido) {
 				case 0:
-					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas) || sensor.terreno[k] == 'X') {
+					if (condicion_entrada) {
 						destino.first = sensor.posF - i;
 						destino.second = sensor.posC - i + j;
 					}
 
-					k++;
 					break;
 
 				case 1:
-					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas) || sensor.terreno[k] == 'X') {
+					if (condicion_entrada) {
 						destino.first = sensor.posF - i + j;
 						destino.second = sensor.posC + i;
 					}
 
-					k++;
 					break;
 
 				case 2:
-					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas) || sensor.terreno[k] == 'X') {
+					if (condicion_entrada) {
 						destino.first = sensor.posF + i;
 						destino.second = sensor.posC + i - j;
 					}
 
-					k++;
 					break;
 
 				case 3:
-					if ((sensor.terreno[k] == 'K' && !bikini) || (sensor.terreno[k] == 'D' && !zapatillas) || sensor.terreno[k] == 'X') {
+					if (condicion_entrada) {
 						destino.first = sensor.posF + i - j;
 						destino.second = sensor.posC - i;
 					}
 
-					k++;
 					break;
 			}
+
+			k++;
 		}
 	}
 
@@ -749,64 +747,58 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 	cout << "Calculando ruta\n";
 	plan.clear();
 
-	auto heuristica_Astar = [&destino] (const nodo &n1, const nodo &n2) {
-		return distancia(n2.st.fila, n2.st.columna, destino.fila, destino.columna)
+	auto heuristica = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
+		return distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) - 3 * n2.bateria_restante
 					<
-			   distancia(n1.st.fila, n1.st.columna, destino.fila, destino.columna);
+			   distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna) - 3 * n1.bateria_restante;
 	};
 
-	priority_queue<nodo, vector<nodo>, decltype(heuristica_Astar)> a_expandir (heuristica_Astar);
+	priority_queue<nodo_bateria, vector<nodo_bateria>, decltype(heuristica)> a_expandir (heuristica);
+	set<estado_bateria> generados;
 
-
-	struct ComparaEstados_alt{
-	bool operator()(const estado &a, const estado &n) const{
-		if ((a.fila > n.fila) || (a.fila == n.fila && a.columna > n.columna) ||
-	      (a.fila == n.fila && a.columna == n.columna && a.orientacion%2 > n.orientacion%2))
-			return true;
-		else
-			return false;
-	}
-	};
-
-	set<estado, ComparaEstados_alt> generados;
-
-	nodo actual = {origen};
-	actual.secuencia.clear();
+	nodo node;
+	node.st = origen;
+	node.secuencia.clear();
+	nodo_bateria actual = {node, sensor.bateria, this->zapatillas, this->bikini};
 
 	a_expandir.push(actual);
 
-	while (!a_expandir.empty() && (actual.st.fila != destino.fila || actual.st.columna != destino.columna)) {
+	while (!a_expandir.empty() && (actual.node.st.fila != destino.fila || actual.node.st.columna != destino.columna)) {
 		a_expandir.pop();
-		generados.insert(actual.st);
+		generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
 
-		nodo hijo_TR = actual;
-		hijo_TR.st.orientacion = (hijo_TR.st.orientacion + 1)%4;
-		if (generados.find(hijo_TR.st) == generados.end()) { // Si no está el hijo en la lista de generados
-			hijo_TR.secuencia.push_back(actTURN_R);
+		nodo_bateria hijo_TR = actual;
+		hijo_TR.node.st.orientacion = (hijo_TR.node.st.orientacion + 1)%4;
+		hijo_TR.bateria_restante -= calcular_costo_bateria(hijo_TR.node.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
+
+		if (generados.find({hijo_TR.node.st, hijo_TR.bateria_restante, hijo_TR.zapatillas, hijo_TR.bikini}) == generados.end()) {
+			hijo_TR.node.secuencia.push_back(actTURN_R);
 			a_expandir.push(hijo_TR);
 		}
 
-		nodo hijo_TL = actual;
-		hijo_TL.st.orientacion = (hijo_TL.st.orientacion + 3)%4;
-		if (generados.find(hijo_TL.st) == generados.end()) { // Si no está el hijo en la lista de generados
-			hijo_TL.secuencia.push_back(actTURN_L);
+
+		nodo_bateria hijo_TL = actual;
+		hijo_TL.node.st.orientacion = (hijo_TL.node.st.orientacion + 3)%4;
+		hijo_TL.bateria_restante -= calcular_costo_bateria(hijo_TL.node.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
+
+		if (generados.find({hijo_TL.node.st, hijo_TL.bateria_restante, hijo_TL.zapatillas, hijo_TL.bikini}) == generados.end()) {
+			hijo_TL.node.secuencia.push_back(actTURN_L);
 			a_expandir.push(hijo_TL);
 		}
 
-		nodo hijo_forward = actual;
-		// Comrpobar que en la casilla de delante del origen no hay un NPC
-		int sig_fila_origen = origen.fila, sig_col_origen = origen.columna;
-		switch (origen.orientacion) {
-			case 0: sig_fila_origen--; break;
-			case 1: sig_col_origen++; break;
-			case 2: sig_fila_origen++; break;
-			case 3: sig_col_origen--; break;
-		};
 
-		if ( !HayObstaculoDelante(hijo_forward.st)) {
-			if ( generados.find(hijo_forward.st) == generados.end() ) {
+		nodo_bateria hijo_forward = actual;
 
-				hijo_forward.secuencia.push_back(actFORWARD);
+
+		if ( !HayObstaculoDelante(hijo_forward.node.st)) {
+			if ( generados.find({hijo_forward.node.st, hijo_forward.bateria_restante, hijo_forward.zapatillas, hijo_forward.bikini}) == generados.end() ) {
+				hijo_forward.node.secuencia.push_back(actFORWARD);
+
+				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'K')
+					hijo_forward.bikini = true;
+				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'D')
+					hijo_forward.zapatillas = true;
+
 				a_expandir.push(hijo_forward);
 			}
 		}
@@ -814,7 +806,16 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 		if (!a_expandir.empty()) {
 			actual = a_expandir.top();
 
-			if (actual.st.fila == sig_fila_origen && actual.st.columna == sig_col_origen && hay_NPC_delante(sensor) && !a_expandir.empty()) {
+			// Comrpobar que en la casilla de delante del origen no hay un NPC
+			int sig_fila_origen = origen.fila, sig_col_origen = origen.columna;
+			switch (origen.orientacion) {
+				case 0: sig_fila_origen--; break;
+				case 1: sig_col_origen++; break;
+				case 2: sig_fila_origen++; break;
+				case 3: sig_col_origen--; break;
+			};
+
+			if (actual.node.st.fila == sig_fila_origen && actual.node.st.columna == sig_col_origen && hay_NPC_delante(sensor) && !a_expandir.empty()) {
 				a_expandir.pop();
 				actual = a_expandir.top();
 			}
@@ -823,9 +824,9 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 
 	cout << "Búsqueda terminada\n";
 
-	if (actual.st.fila == destino.fila && actual.st.columna == destino.columna) {
+	if (actual.node.st.fila == destino.fila && actual.node.st.columna == destino.columna) {
 		cout << "Cargando plan\n";
-		plan = actual.secuencia;
+		plan = actual.node.secuencia;
 
 		cout << "Longitud del plan:" << plan.size() << endl;
 		PintaPlan(plan);
