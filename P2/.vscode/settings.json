@@ -5,6 +5,8 @@
         "queue": "cpp",
         "xstddef": "cpp",
         "unordered_set": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "deque": "cpp",
+        "xstring": "cpp"
     }
 }
