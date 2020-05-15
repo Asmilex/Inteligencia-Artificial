@@ -552,7 +552,6 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 			el consumo se reducirá, y se debe actualizar su presencia en los nodos.
 		*/
 
-
 		a_expandir.pop();
 		insercion_optimizada(actual);
 
@@ -569,10 +568,12 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 		//
 
 			nodo_bateria hijo_TR = actual;
-			hijo_TR.node.st.orientacion = (hijo_TR.node.st.orientacion + 1)%4;
-			hijo_TR.bateria_restante -= calcular_costo_bateria(hijo_TR.node.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
 
-			if (actual.bateria_restante > mejor_solucion.bateria_restante && comprobar_viabilidad(hijo_TR)) {
+			hijo_TR.node.st.orientacion  = (hijo_TR.node.st.orientacion + 1)%4;
+			hijo_TR.bateria_restante    -= calcular_costo_bateria(hijo_TR.node.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
+			hijo_TR.bateria_restante     = min(hijo_TR.bateria_restante, 3000);
+
+			if (comprobar_viabilidad(hijo_TR)) {
 				hijo_TR.node.secuencia.push_back(actTURN_R);
 				a_expandir.push(hijo_TR);
 			}
@@ -582,10 +583,12 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 		//
 
 			nodo_bateria hijo_TL = actual;
-			hijo_TL.node.st.orientacion = (hijo_TL.node.st.orientacion + 3)%4;
-			hijo_TL.bateria_restante -= calcular_costo_bateria(hijo_TL.node.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
 
-			if (actual.bateria_restante > mejor_solucion.bateria_restante && comprobar_viabilidad(hijo_TL)) {
+			hijo_TL.node.st.orientacion  = (hijo_TL.node.st.orientacion + 3)%4;
+			hijo_TL.bateria_restante    -= calcular_costo_bateria(hijo_TL.node.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
+			hijo_TL.bateria_restante     = min(3000, hijo_TL.bateria_restante);
+
+			if (comprobar_viabilidad(hijo_TL)) {
 				hijo_TL.node.secuencia.push_back(actTURN_L);
 				a_expandir.push(hijo_TL);
 			}
@@ -598,10 +601,12 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 
 
 			nodo_bateria hijo_forward = actual;
+
 			hijo_forward.bateria_restante -= calcular_costo_bateria(hijo_forward.node.st, actFORWARD, hijo_forward.zapatillas, hijo_forward.bikini);
+			hijo_forward.bateria_restante  = min(3000, hijo_forward.bateria_restante);
 
 
-			if (!HayObstaculoDelante(hijo_forward.node.st) && actual.bateria_restante > mejor_solucion.bateria_restante && comprobar_viabilidad(hijo_forward)) {
+			if (!HayObstaculoDelante(hijo_forward.node.st) && comprobar_viabilidad(hijo_forward)) {
 				hijo_forward.node.secuencia.push_back(actFORWARD);
 
 				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'K')
@@ -609,13 +614,12 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'D')
 					hijo_forward.zapatillas = true;
 				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'X') {
-
 					while (hijo_forward.bateria_restante < 3000) {
 						hijo_forward.node.secuencia.push_back(actIDLE);
 						hijo_forward.bateria_restante += 10;
 					}
 
-					hijo_forward.bateria_restante = max(3000, hijo_forward.bateria_restante);
+					hijo_forward.bateria_restante = min(3000, hijo_forward.bateria_restante);
 				}
 
 				a_expandir.push(hijo_forward);
