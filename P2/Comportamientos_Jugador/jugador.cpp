@@ -468,8 +468,10 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 // ─────────────────────────────────────────────── ESTRUCTURAS DE DATOS CLAVE ─────
 //
 
-	auto prioridad_nodo_bateria = [](const nodo_bateria& n1, const nodo_bateria& n2) {
-		return n1.bateria_restante < n2.bateria_restante;
+	auto prioridad_nodo_bateria = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
+		return n1.bateria_restante - distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna)
+					<
+			   n2.bateria_restante - distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) ;
 	};
 
 	priority_queue<nodo_bateria, vector<nodo_bateria>, decltype(prioridad_nodo_bateria)> a_expandir(prioridad_nodo_bateria);
