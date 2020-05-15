@@ -103,6 +103,7 @@ class Entidad {
 
 	  void perderPV(int valor) {vida -= valor;}
 	  void ganarPV(int valor) {vida += valor;}
+    int getInstantesPendientes(){return vida;}
 
 	  int getColisiones() {return colisiones;}
     int getMuertesI() {return muertes_innecesarias;}

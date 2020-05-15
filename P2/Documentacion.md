@@ -7,19 +7,20 @@
 
 <!-- code_chunk_output -->
 
-- [Preámbulos](#preámbulos)
-- [Búsqueda en anchura](#búsqueda-en-anchura)
-- [Costo Uniforme](#costo-uniforme)
-    - [Modificación del nodo](#modificación-del-nodo)
-    - [Modificación de la estructura estado](#modificación-de-la-estructura-estado)
-    - [Funciones auxiliares](#funciones-auxiliares)
-    - [Algoritmo principal](#algoritmo-principal)
-- [A* modificado](#a-modificado)
-- [El método think](#el-método-think)
-- [Algunos resultados](#algunos-resultados)
-    - [mapa30.map](#mapa30map)
-    - [mapa50.map](#mapa50map)
-    - [mapa75.map](#mapa75map)
+- [Documentación práctica 2 - Belkan](#documentaci%c3%b3n-pr%c3%a1ctica-2---belkan)
+	- [Preámbulos](#pre%c3%a1mbulos)
+	- [Búsqueda en anchura](#b%c3%basqueda-en-anchura)
+	- [Costo Uniforme](#costo-uniforme)
+			- [Modificación del nodo](#modificaci%c3%b3n-del-nodo)
+			- [Modificación de la estructura estado](#modificaci%c3%b3n-de-la-estructura-estado)
+			- [Funciones auxiliares](#funciones-auxiliares)
+			- [Algoritmo principal](#algoritmo-principal)
+	- [A* modificado](#a-modificado)
+	- [El método think](#el-m%c3%a9todo-think)
+	- [Algunos resultados](#algunos-resultados)
+			- [mapa30.map](#mapa30map)
+			- [mapa50.map](#mapa50map)
+			- [mapa75.map](#mapa75map)
 
 <!-- /code_chunk_output -->
 
@@ -173,8 +174,6 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion, b
 			break;
 		case 'T': costo = 2;
             break;
-		case '?': costo =  5; // Suposición - FIXME
-			break;
 		case 'X': costo = -10;
             break;
 		default:  costo = 1;
@@ -333,43 +332,7 @@ La metodología ahora cambia un poco. Hemos pasado de tener toda la información
 Usamos la siguiente función para actualizar el mapa:
 
 ```C++
-void ComportamientoJugador::actualizar_mapaResultado (Sensores sensor) {
-	size_t k = 0;
-
-	for(size_t i = 0; i < 4; i++) {
-		for(size_t j = 0; j <= i*2; j++ ) {
-			switch (sensor.sentido) {
-				case 0:
-					if (sensor.posC - i + j < 100 && mapaResultado[sensor.posF - i][sensor.posC - i + j] == '?')
-						mapaResultado[sensor.posF - i][sensor.posC - i + j] = sensor.terreno[k];
-
-					k++;
-					break;
-
-				case 1:
-					if (sensor.posC - i + j < 100 && sensor.posC + i < 100 && mapaResultado[sensor.posF - i + j][sensor.posC + i] == '?')
-						mapaResultado[sensor.posF - i + j][sensor.posC + i] = sensor.terreno[k];
-
-					k++;
-					break;
-
-				case 2:
-					if (sensor.posF + i < 100 && sensor.posC + i - j < 100 && mapaResultado[sensor.posF + i][sensor.posC + i - j] == '?')
-						mapaResultado[sensor.posF + i][sensor.posC + i - j] = sensor.terreno[k];
-
-					k++;
-					break;
-
-				case 3:
-					if (sensor.posF + i - j < 100 && mapaResultado[sensor.posF + i - j][sensor.posC - i] == '?')
-						mapaResultado[sensor.posF + i - j][sensor.posC - i] = sensor.terreno[k];
-
-					k++;
-					break;
-			}
-		}
-	}
-}
+void ComportamientoJugador::actualizar_mapaResultado (Sensores sensor);
 ```
 
 Cuando estemos avanzando, nos podríamos encontrar NPCs delante. La siguiente función nos permitirá saber si hay alguno en nuestro camino:
@@ -386,15 +349,17 @@ La que usaremos será:
 
 ```C++
 auto heuristica = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
-    return distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) - 3 * n2.bateria_restante
-                <
-            distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna) - 3 * n1.bateria_restante;
+	return distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) - int(0 * n2.bateria_restante)
+				<
+			distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna) - int(0 * n1.bateria_restante);
 };
 ```
 
-En mi experiencia, el ajuste de la heurística puede cambiar radicalmente. Por ejemplo, usando de peso para la batería `*2`, hace que obtenga 96 resultados con la ejecución `./BelkanSG mapas/mapa30.map 1 4 9 12 1 3 3`, mientras que con `*3`, se obtienen 117.
+En mi experiencia, el ajuste de los pesos que acompañan a la batería cambia radicalmente el resultado. Por ejemplo, usando `*2`, hace que obtenga 96 resultados con la ejecución `./BelkanSG mapas/mapa30.map 1 4 9 12 1 3 3`, mientras que con `*3`, se obtienen 117.
 
-A*, por tanto, queda así:
+Curiosamente, el peso que mejor resultados obtiene es el de 0; lo cual hace que sea un A* esencialmente.
+
+Este es el cuerpo de la función:
 
 ```C++
 bool ComportamientoJugador::A_estrella(const estado &origen, const estado &destino, list<Action> &plan, const Sensores &sensor) {
@@ -402,9 +367,9 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 	plan.clear();
 
 	auto heuristica = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
-		return distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) - 2 * n2.bateria_restante
+		return distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) - int(0 * n2.bateria_restante)
 					<
-			   distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna) - 2 * n1.bateria_restante;
+			   distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna) - int(0 * n1.bateria_restante);
 	};
 
 	priority_queue<nodo_bateria, vector<nodo_bateria>, decltype(heuristica)> a_expandir (heuristica);
@@ -509,7 +474,6 @@ Action ComportamientoJugador::think(Sensores sensores) {
 	if (mapaResultado[sensores.posF][sensores.posC] == 'K')
 		bikini = true;
 
-	// No se hacen funciones con efectos secundarios @profesores
 	estado copia_actual = actual;
 
 	if (	plan.empty()
@@ -572,26 +536,30 @@ Para terminar, presento algunos resultados obtenidos mediante la ejecución de `
 
 #### mapa30.map
 ```
-Tiempo Consumido: 0.3125
-Nivel Final de Bateria: 1352
+Instantes de simulacion no consumidos: 0
+Tiempo Consumido: 0.09375
+Nivel Final de Bateria: 648
 Colisiones: 0
 Muertes: 0
-Objetivos encontrados: 117
+Objetivos encontrados: 126
 ```
+
 #### mapa50.map
 ```
-Tiempo Consumido: 0.109375
-Nivel Final de Bateria: 861
+Instantes de simulacion no consumidos: 458
+Tiempo Consumido: 0.015625
+Nivel Final de Bateria: 0
 Colisiones: 0
 Muertes: 0
-Objetivos encontrados: 72
+Objetivos encontrados: 60
 ```
 
 #### mapa75.map
 ```
-Tiempo Consumido: 1.375
-Nivel Final de Bateria: 0
+Instantes de simulacion no consumidos: 0
+Tiempo Consumido: 0.5625
+Nivel Final de Bateria: 1345
 Colisiones: 0
 Muertes: 0
-Objetivos encontrados: 23
+Objetivos encontrados: 33
 ```

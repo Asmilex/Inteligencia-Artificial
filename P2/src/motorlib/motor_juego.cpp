@@ -333,14 +333,14 @@ bool lanzar_motor_juego(int & colisiones, int acc, GLUI_EditText * editPosX, GLU
           cout << "Cambiado el objetivo\n";
         }
         nucleo_motor_juego(monitor, acc, editPosX, editPosY);
-	      colisiones += monitor.get_entidad(0)->getColisiones();
       }
     }
 
     if (monitor.mostrarResultados()) {
+      cout << "Instantes de simulacion no consumidos: " << monitor.get_entidad(0)->getInstantesPendientes() << endl;
       cout << "Tiempo Consumido: " << 1.0 * monitor.get_entidad(0)->getTiempo() / CLOCKS_PER_SEC << endl;
       cout << "Nivel Final de Bateria: " << monitor.get_entidad(0)->getBateria() << endl;
-      cout << "Colisiones: " << colisiones << endl;
+      cout << "Colisiones: " << monitor.get_entidad(0)->getColisiones() << endl;
       cout << "Muertes: " << monitor.get_entidad(0)->getMuertesI() << endl;
       cout << "Objetivos encontrados: " << monitor.get_entidad(0)->getMisiones() << endl;
       monitor.setMostrarResultados(false);
@@ -353,19 +353,18 @@ bool lanzar_motor_juego(int & colisiones, int acc, GLUI_EditText * editPosX, GLU
 
 
 void lanzar_motor_juego2(MonitorJuego &monitor) {
-  int colisiones = 0;
 
   monitor.get_entidad(0)->setObjetivo(monitor.getObjX(), monitor.getObjY());
 
   while (!monitor.finJuego() && monitor.jugar()) {
       nucleo_motor_juego(monitor,-1, NULL, NULL);
-      colisiones += monitor.get_entidad(0)->getColisiones();
   }
 
   if (monitor.mostrarResultados()) {
+    cout << "Instantes de simulacion no consumidos: " << monitor.get_entidad(0)->getInstantesPendientes() << endl;
     cout << "Tiempo Consumido: " << 1.0 * monitor.get_entidad(0)->getTiempo() / CLOCKS_PER_SEC << endl;
     cout << "Nivel Final de Bateria: " << monitor.get_entidad(0)->getBateria() << endl;
-    cout << "Colisiones: " << colisiones << endl;
+    cout << "Colisiones: " << monitor.get_entidad(0)->getColisiones() << endl;
     cout << "Muertes: " << monitor.get_entidad(0)->getMuertesI() << endl;
     cout << "Objetivos encontrados: " << monitor.get_entidad(0)->getMisiones() << endl;
     monitor.setMostrarResultados(false);

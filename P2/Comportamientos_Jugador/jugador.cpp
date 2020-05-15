@@ -33,7 +33,7 @@ Action ComportamientoJugador::think(Sensores sensores) {
 	if (mapaResultado[sensores.posF][sensores.posC] == 'K')
 		bikini = true;
 
-	// No se hacen funciones con efectos secundarios @profesores
+	// No se hacen funciones con efectos secundarios
 	estado copia_actual = actual;
 
 	if (	plan.empty()
@@ -433,10 +433,10 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion, b
 		case 'T':
 			costo = 2;
 			break;
-
+/*
 		case '?':
 			costo =  5; // Suposición - FIXME
-			break;
+			break; */
 
 		case 'X':
 			costo = -10;
@@ -748,9 +748,9 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 	plan.clear();
 
 	auto heuristica = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
-		return distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) - 3 * n2.bateria_restante
+		return distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) - int(0 * n2.bateria_restante)
 					<
-			   distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna) - 3 * n1.bateria_restante;
+			   distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna) - int(0 * n1.bateria_restante);
 	};
 
 	priority_queue<nodo_bateria, vector<nodo_bateria>, decltype(heuristica)> a_expandir (heuristica);

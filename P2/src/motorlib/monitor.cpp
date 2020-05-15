@@ -67,7 +67,7 @@ void MonitorJuego::decPasos(GLUI_EditText * editPosX, GLUI_EditText * editPosY) 
     }
     else {
       // Nivel 4
-      if ((maxPasos - pasosTotales) <= 0
+      if (!get_entidad(0)->vivo()
            or get_entidad(0)->getBateria() == 0
            or get_entidad(0)->getTiempo() > get_entidad(0)->getTiempoMaximo()) {
         jugando = false;
@@ -128,7 +128,7 @@ void MonitorJuego::decPasos(GLUI_EditText * editPosX, GLUI_EditText * editPosY) 
       pasosTotales++;
     }
 
-    if ((maxPasos - pasosTotales) <= 0 or get_entidad(0)->getBateria() == 0) {
+    if (!get_entidad(0)->vivo() or get_entidad(0)->getBateria() == 0) {
       jugando = false;
       resultados = true;
     }
