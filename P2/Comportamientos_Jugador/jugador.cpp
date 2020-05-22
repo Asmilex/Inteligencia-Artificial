@@ -8,16 +8,31 @@
 #include <queue>
 #include <unordered_set>
 
+
+double distancia (int fila_0, int columna_0, int fila_destino, int columna_destino) {
+	return abs(fila_0 - fila_destino) + abs(columna_0 - columna_destino);
+};
+
+
 // Este es el método principal que debe contener los 4 Comportamientos_Jugador
 // que se piden en la práctica. Tiene como entrada la información de los
 // sensores y devuelve la acción a realizar.
 Action ComportamientoJugador::think(Sensores sensores) {
-	if (destino.fila == actual.fila && destino.columna == actual.columna) {
-		hayPlan = false;
+	static int recalculaciones = 0;
+
+	if (sensores.vida%4 == 0) {
+		acabo_de_calcular = false;
 	}
 
-	if (sensores.nivel == 4)
+	if (sensores.nivel == 4) {
 		actualizar_mapaResultado(sensores);
+
+		if (cuenta_nuevos_descub > 15) {
+			recalcular_nuevos_descub = true;
+			cuenta_nuevos_descub = 0;
+		}
+	}
+
 
 	actual.fila        = sensores.posF;
 	actual.columna     = sensores.posC;
@@ -25,54 +40,79 @@ Action ComportamientoJugador::think(Sensores sensores) {
 	fil                = actual.fila;
 	col                = actual.columna;
 	brujula            = actual.orientacion;
-	destino.fila       = sensores.destinoF;
-	destino.columna    = sensores.destinoC;
 
-	if (mapaResultado[sensores.posF][sensores.posC] == 'D')
+	if (destino.fila == actual.fila && destino.columna == actual.columna) {
+		hayPlan           = false;
+		recalculaciones   = 0;
+		acabo_de_calcular = false;
+		powerup_avistado  = false;
+	}
+
+	if (!hayPlan) {
+		destino.fila    = sensores.destinoF;
+		destino.columna = sensores.destinoC;
+	}
+
+
+	if (mapaResultado[actual.fila][actual.columna] == 'X') {
+		powerup_avistado = false;
+	}
+	if (mapaResultado[actual.fila][actual.columna] == 'D') {
 		zapatillas = true;
-	if (mapaResultado[sensores.posF][sensores.posC] == 'K')
+		if (!zapatillas)
+			powerup_avistado = false;
+	}
+	if (mapaResultado[actual.fila][actual.columna] == 'K') {
 		bikini = true;
+		if (!bikini)
+			powerup_avistado = false;
+	}
+
 
 	// No se hacen funciones con efectos secundarios
 	estado copia_actual = actual;
 
 	if (	plan.empty()
 		||  (plan.size() > 0 && plan.front() == actFORWARD && HayObstaculoDelante(copia_actual))	// He chocado con algo y no lo tenía previsto.
-		||  hay_NPC_delante(sensores)) {
+		||  hay_NPC_delante(sensores)
+		||  (recalcular_nuevos_descub && distancia(actual.fila, actual.columna, destino.fila, destino.columna) > 10 && !powerup_avistado) ) {
 
 		hayPlan = pathFinding(sensores, actual, destino, plan);
+		recalculaciones++;
+
+
+		if (recalcular_nuevos_descub)
+			recalcular_nuevos_descub = false;
 	}
+
 
 
 	if (sensores.nivel == 4) {
 		pair<int, int> powerups_cercanos = hay_powerups_cerca(sensores);
 
 		if (powerups_cercanos.first != -1 && powerups_cercanos.second != -1) {
-			estado destino_temp;
-			destino_temp.fila = powerups_cercanos.first;
-			destino_temp.columna = powerups_cercanos.second;
+			powerup_avistado = true;
+
+
+			destino.fila = powerups_cercanos.first;
+			destino.columna = powerups_cercanos.second;
 
 			bool es_recarga = mapaResultado[powerups_cercanos.first][powerups_cercanos.second] == 'X';
 
-			if (!es_recarga	|| (es_recarga && sensores.bateria < 1000)) {
-				hayPlan = pathFinding(sensores, actual, destino_temp, plan);
-
-
-				if (es_recarga) {
-					int lvl_bateria = sensores.bateria;
-
-					while (lvl_bateria < max(int(sensores.tiempo*2), 2000)) {
-						plan.push_back(actIDLE);
-						lvl_bateria += 10;
-					}
-				}
+			if (!acabo_de_calcular) {
+				if (!es_recarga || es_recarga && sensores.bateria < limite_inf_bateria)
+				hayPlan = pathFinding(sensores, actual, destino, plan);
+				acabo_de_calcular = true;
 			}
 		}
 	}
 
 	Action siguiente_accion = actIDLE;
 
-	if (hayPlan && plan.size() > 0) {
+	bool estoy_recargando = sensores.nivel == 4 && mapaResultado[actual.fila][actual.columna] == 'X' && sensores.bateria < min(int(sensores.vida * 1.5), limite_inf_bateria);
+
+
+	if ((hayPlan && plan.size() > 0) && (!estoy_recargando)) {
 		siguiente_accion = plan.front();
 		plan.erase(plan.begin());
 	}
@@ -433,10 +473,15 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion, b
 		case 'T':
 			costo = 2;
 			break;
-/*
+
 		case '?':
-			costo =  5; // Suposición - FIXME
-			break; */
+			if (bikini && zapatillas)
+				costo =  7;
+			else if (bikini)
+				costo = 10;
+			else if (zapatillas)
+				costo = 5;
+			break;
 
 		case 'X':
 			costo = -10;
@@ -449,10 +494,6 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion, b
 
 	return costo;
 }
-
-double distancia (int fila_0, int columna_0, int fila_destino, int columna_destino) {
-	return abs(fila_0 - fila_destino) + abs(columna_0 - columna_destino);
-};
 
 //
 // ─────────────────────────────────────────────────────────── COSTO UNIFORME ─────
@@ -662,29 +703,37 @@ void ComportamientoJugador::actualizar_mapaResultado (Sensores sensor) {
 		for(size_t j = 0; j <= i*2; j++ ) {
 			switch (sensor.sentido) {
 				case 0:
-					if (sensor.posC - i + j < 100 && mapaResultado[sensor.posF - i][sensor.posC - i + j] == '?')
+					if (sensor.posC - i + j < 100 && mapaResultado[sensor.posF - i][sensor.posC - i + j] == '?') {
 						mapaResultado[sensor.posF - i][sensor.posC - i + j] = sensor.terreno[k];
+						cuenta_nuevos_descub++;
+					}
 
 					k++;
 					break;
 
 				case 1:
-					if (sensor.posC - i + j < 100 && sensor.posC + i < 100 && mapaResultado[sensor.posF - i + j][sensor.posC + i] == '?')
+					if (sensor.posC - i + j < 100 && sensor.posC + i < 100 && mapaResultado[sensor.posF - i + j][sensor.posC + i] == '?') {
 						mapaResultado[sensor.posF - i + j][sensor.posC + i] = sensor.terreno[k];
+						cuenta_nuevos_descub++;
+					}
 
 					k++;
 					break;
 
 				case 2:
-					if (sensor.posF + i < 100 && sensor.posC + i - j < 100 && mapaResultado[sensor.posF + i][sensor.posC + i - j] == '?')
+					if (sensor.posF + i < 100 && sensor.posC + i - j < 100 && mapaResultado[sensor.posF + i][sensor.posC + i - j] == '?') {
 						mapaResultado[sensor.posF + i][sensor.posC + i - j] = sensor.terreno[k];
+						cuenta_nuevos_descub++;
+					}
 
 					k++;
 					break;
 
 				case 3:
-					if (sensor.posF + i - j < 100 && mapaResultado[sensor.posF + i - j][sensor.posC - i] == '?')
+					if (sensor.posF + i - j < 100 && mapaResultado[sensor.posF + i - j][sensor.posC - i] == '?') {
 						mapaResultado[sensor.posF + i - j][sensor.posC - i] = sensor.terreno[k];
+						cuenta_nuevos_descub++;
+					}
 
 					k++;
 					break;
@@ -749,62 +798,116 @@ pair<int, int> ComportamientoJugador::hay_powerups_cerca (Sensores sensor) {
 }
 
 
+class estado_A: public estado {
+public:
+	double coste = 0;
+};
+
+class nodo_A: public nodo {
+public:
+	estado_A st;
+	double coste_hasta_aqui = 0;
+	bool   zapatillas       = false;
+	bool   bikini           = false;
+};
+
 bool ComportamientoJugador::A_estrella(const estado &origen, const estado &destino, list<Action> &plan, const Sensores &sensor) {
 	cout << "Calculando ruta\n";
 	plan.clear();
 
-	auto heuristica = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
-		return distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) - int(0 * n2.bateria_restante)
-					<
-			   distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna) - int(0 * n1.bateria_restante);
+	auto ordenar_prioridades = [](const nodo_A n1, const nodo_A n2) {
+		return n1.coste_hasta_aqui > n2.coste_hasta_aqui;
 	};
 
-	priority_queue<nodo_bateria, vector<nodo_bateria>, decltype(heuristica)> a_expandir (heuristica);
-	set<estado_bateria> generados;
+	priority_queue<nodo_A, vector<nodo_A>, decltype(ordenar_prioridades)> a_expandir (ordenar_prioridades);
+	set<estado, ComparaEstados> generados;
 
-	nodo node;
-	node.st = origen;
-	node.secuencia.clear();
-	nodo_bateria actual = {node, sensor.bateria, this->zapatillas, this->bikini};
+	nodo_A actual;
+
+	actual.st.fila        = origen.fila;
+	actual.st.columna     = origen.columna;
+	actual.st.orientacion = origen.orientacion;
+	actual.zapatillas     = zapatillas;
+	actual.bikini         = bikini;
+
+	actual.secuencia.clear();
 
 	a_expandir.push(actual);
 
-	while (!a_expandir.empty() && (actual.node.st.fila != destino.fila || actual.node.st.columna != destino.columna)) {
+	double peso_h = 1;
+	double peso_g = 1;
+
+	if (bikini && zapatillas) {
+		peso_h = 2;
+	}
+
+	while (!a_expandir.empty() && (actual.st.fila != destino.fila || actual.st.columna != destino.columna)) {
 		a_expandir.pop();
-		generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
+		generados.insert(actual.st);
 
-		nodo_bateria hijo_TR = actual;
-		hijo_TR.node.st.orientacion = (hijo_TR.node.st.orientacion + 1)%4;
-		hijo_TR.bateria_restante -= calcular_costo_bateria(hijo_TR.node.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
+//
+// ───────────────────────────────────────────────────────────── HIJO DERECHA ─────
+//
 
-		if (generados.find({hijo_TR.node.st, hijo_TR.bateria_restante, hijo_TR.zapatillas, hijo_TR.bikini}) == generados.end()) {
-			hijo_TR.node.secuencia.push_back(actTURN_R);
+		nodo_A hijo_TR = actual;
+		hijo_TR.st.orientacion = (hijo_TR.st.orientacion + 1)%4;
+
+		int coste_TR =
+			  peso_h * distancia(hijo_TR.st.fila, hijo_TR.st.columna, destino.fila, destino.columna)
+			+ peso_g * calcular_costo_bateria(hijo_TR.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
+
+		hijo_TR.coste_hasta_aqui = coste_TR;
+		hijo_TR.st.coste = coste_TR;
+
+		if (generados.find(hijo_TR.st) == generados.end()) { // Si no está el hijo en la lista de generados
+
+			hijo_TR.secuencia.push_back(actTURN_R);
 			a_expandir.push(hijo_TR);
 		}
 
+//
+// ─────────────────────────────────────────────────────────── HIJO IZQUIERDA ─────
+//
 
-		nodo_bateria hijo_TL = actual;
-		hijo_TL.node.st.orientacion = (hijo_TL.node.st.orientacion + 3)%4;
-		hijo_TL.bateria_restante -= calcular_costo_bateria(hijo_TL.node.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
+		nodo_A hijo_TL = actual;
+		hijo_TL.st.orientacion = (hijo_TL.st.orientacion + 3)%4;
+		int coste_TL =
+			  peso_h * distancia(hijo_TL.st.fila, hijo_TL.st.columna, destino.fila, destino.columna)
+			+ peso_g * calcular_costo_bateria(hijo_TL.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
 
-		if (generados.find({hijo_TL.node.st, hijo_TL.bateria_restante, hijo_TL.zapatillas, hijo_TL.bikini}) == generados.end()) {
-			hijo_TL.node.secuencia.push_back(actTURN_L);
+		hijo_TL.coste_hasta_aqui = coste_TL;
+		hijo_TL.st.coste = coste_TL;
+
+		if (generados.find(hijo_TL.st) == generados.end()) { // Si no está el hijo en la lista de generados
+			hijo_TL.secuencia.push_back(actTURN_L);
 			a_expandir.push(hijo_TL);
 		}
 
+//
+// ─────────────────────────────────────────────────────── HIJO HACIA DELANTE ─────
+//
 
-		nodo_bateria hijo_forward = actual;
+		nodo_A hijo_forward = actual;
+		// Comrpobar que en la casilla de delante del origen no hay un NPC
+		int sig_fila_origen = origen.fila, sig_col_origen = origen.columna;
+		switch (origen.orientacion) {
+			case 0: sig_fila_origen--; break;
+			case 1: sig_col_origen++; break;
+			case 2: sig_fila_origen++; break;
+			case 3: sig_col_origen--; break;
+		};
 
+		int coste_forward =
+			  peso_h * distancia(hijo_forward.st.fila, hijo_forward.st.columna, destino.fila, destino.columna)
+			+ peso_g * calcular_costo_bateria(hijo_forward.st, actFORWARD, hijo_forward.zapatillas, hijo_forward.bikini);
 
-		if ( !HayObstaculoDelante(hijo_forward.node.st)) {
-			if ( generados.find({hijo_forward.node.st, hijo_forward.bateria_restante, hijo_forward.zapatillas, hijo_forward.bikini}) == generados.end() ) {
-				hijo_forward.node.secuencia.push_back(actFORWARD);
+		hijo_forward.coste_hasta_aqui = coste_forward;
+		hijo_forward.st.coste = coste_forward;
 
-				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'K')
-					hijo_forward.bikini = true;
-				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'D')
-					hijo_forward.zapatillas = true;
+		if ( !HayObstaculoDelante(hijo_forward.st)) {
+			if ( generados.find(hijo_forward.st) == generados.end() ) {
 
+				hijo_forward.secuencia.push_back(actFORWARD);
 				a_expandir.push(hijo_forward);
 			}
 		}
@@ -812,16 +915,7 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 		if (!a_expandir.empty()) {
 			actual = a_expandir.top();
 
-			// Comrpobar que en la casilla de delante del origen no hay un NPC
-			int sig_fila_origen = origen.fila, sig_col_origen = origen.columna;
-			switch (origen.orientacion) {
-				case 0: sig_fila_origen--; break;
-				case 1: sig_col_origen++; break;
-				case 2: sig_fila_origen++; break;
-				case 3: sig_col_origen--; break;
-			};
-
-			if (actual.node.st.fila == sig_fila_origen && actual.node.st.columna == sig_col_origen && hay_NPC_delante(sensor) && !a_expandir.empty()) {
+			if (actual.st.fila == sig_fila_origen && actual.st.columna == sig_col_origen && hay_NPC_delante(sensor) && !a_expandir.empty()) {
 				a_expandir.pop();
 				actual = a_expandir.top();
 			}
@@ -830,9 +924,9 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 
 	cout << "Búsqueda terminada\n";
 
-	if (actual.node.st.fila == destino.fila && actual.node.st.columna == destino.columna) {
+	if (actual.st.fila == destino.fila && actual.st.columna == destino.columna) {
 		cout << "Cargando plan\n";
-		plan = actual.node.secuencia;
+		plan = actual.secuencia;
 
 		cout << "Longitud del plan:" << plan.size() << endl;
 		PintaPlan(plan);

@@ -45,10 +45,17 @@ class ComportamientoJugador : public Comportamiento {
     bool zapatillas = false, bikini = false;
     estado actual, destino;
     list<Action> plan;
+    //bool powerup_localizado = false;
 
     Action ultimaAccion;
     bool hayPlan;
     bool recargas_calculadas_CU = false;
+    bool recalcular_nuevos_descub = false;
+    int cuenta_nuevos_descub = 0;
+
+    bool acabo_de_calcular = false;
+    bool powerup_avistado = false;
+    const int limite_inf_bateria = 2800;
 
     // Métodos privados de la clase
     int calcular_costo_bateria(estado state, Action accion, bool zapatillas, bool bikini);
