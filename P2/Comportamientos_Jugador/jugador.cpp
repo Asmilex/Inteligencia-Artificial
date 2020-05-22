@@ -385,48 +385,29 @@ bool ComportamientoJugador::pathFinding_Anchura(const estado &origen, const esta
 // ───────────────── ESTRUCTURAS DE DATOS NECESARIAS PARA UNIFORM COST SEARCH ─────
 //
 
-	// Extensión de los nodos para contabilizar el gasto de energía.
-	struct nodo_bateria {
-		nodo node;
-		int bateria_restante;
-		bool zapatillas;
-		bool bikini;
+	class estado_A: public estado {
+	public:
+		double coste = 0;
+		bool zapatillas = false;
+		bool bikini = false;
 	};
 
-
-
-	// Extensión del estado para contabilizar la batería.
-	struct estado_bateria {
-		estado st;
-		int bateria;
-		bool zapatillas;
-		bool bikini;
-
-		bool operator==(const estado_bateria& otro) const {
-			return 		st.fila == otro.st.fila
-					&& 	st.columna == otro.st.columna
-					&&  st.orientacion == otro.st.orientacion
-					&& 	bateria == otro.bateria
-					&& 	zapatillas == otro.zapatillas
-					&& 	bikini == otro.bikini;
-		}
-
-		bool operator< (const estado_bateria& otro) const {
-			if ((st.fila > otro.st.fila) || (st.fila == otro.st.fila && st.columna > otro.st.columna) ||
-		      (st.fila == otro.st.fila && st.columna == otro.st.columna && st.orientacion > otro.st.orientacion))
-				return true;
-			else
-				return false;
-		}
+	class nodo_A: public nodo {
+	public:
+		estado_A st;
+		double coste_hasta_aqui = 0;
+		bool   zapatillas       = false;
+		bool   bikini           = false;
 	};
+
 
 	// Estructura:
 	// Bateria -> B, fila -> f, columna -> c, zapatilla -> z, bikini -> b
 	// ffccBBBBzb
 	struct hash_estado_bateria {
-		size_t operator()(const estado_bateria& state) const {
-			return 		state.st.fila * 100000000 + state.st.columna * 1000000
-					+ 	state.bateria * 100
+		size_t operator()(const estado_A& state) const {
+			return 		state.fila * 100000000 + state.columna * 1000000
+					+ 	state.coste * 100
 					+   state.zapatillas * 10 + state.bikini;
 		}
 	};
@@ -509,172 +490,159 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 // ─────────────────────────────────────────────── ESTRUCTURAS DE DATOS CLAVE ─────
 //
 
-	auto prioridad_nodo_bateria = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
-		return n1.bateria_restante - distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna)
-					<
-			   n2.bateria_restante - distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) ;
+	struct prioridad_nodo_bateria {
+		bool operator()(const nodo_A& n1, const nodo_A& n2){
+			return n1.coste_hasta_aqui < n2.coste_hasta_aqui;
+		}
 	};
 
-	priority_queue<nodo_bateria, vector<nodo_bateria>, decltype(prioridad_nodo_bateria)> a_expandir(prioridad_nodo_bateria);
 
-	unordered_set<estado_bateria, hash_estado_bateria> generados;
-	nodo_bateria mejor_solucion = {};
+	multiset<nodo_A, prioridad_nodo_bateria> a_expandir;
+	set<estado_A, ComparaEstados> generados;
 
-//
-// ─────────────────────────────────────────────── OPTIMIZACION DE VIABILIDAD ─────
-//
 
-	auto comprobar_viabilidad = [&generados, &mejor_solucion, destino](nodo_bateria actual) {
-		bool es_viable = true;
-
-		if (actual.bateria_restante < 0){
-			es_viable = false;
-		}
-		else {
-			for (const auto elemento: generados) {
-				if (	elemento.st.fila == actual.node.st.fila
-					&&  elemento.st.columna == actual.node.st.columna
-					&& 	elemento.st.orientacion == actual.node.st.orientacion
-					//&&	elemento.zapatillas == actual.zapatillas
-					//&& 	elemento.bikini == actual.bikini
-					&& 	elemento.bateria >= actual.bateria_restante) {
-
-					es_viable = false;
-					break;
-				}
+	auto encontrar_en_expandir = [&a_expandir](const nodo_A& nodo) {
+		for (multiset<nodo_A, prioridad_nodo_bateria>::const_iterator it = a_expandir.begin(); it != a_expandir.end(); ++it) {
+			if ((*it).st.fila == nodo.st.fila && (*it).st.columna == nodo.st.columna && (*it).st.orientacion == nodo.st.orientacion && (*it).zapatillas == nodo.zapatillas && (*it).bikini == nodo.bikini) {
+				return it;
 			}
 		}
-
-		return es_viable;
+		return a_expandir.end();
 	};
-
-
-	// Para reducir el número de elementos a comprobar en la búsqueda, optimizamos la inserción
-	auto insercion_optimizada = [&generados](nodo_bateria actual) {
-		auto elemento = generados.begin();
-		for (elemento; elemento != generados.end(); elemento++) {
-			if (	elemento->st.fila == actual.node.st.fila && elemento->st.columna == actual.node.st.columna
-				&&  elemento->st.orientacion == actual.node.st.orientacion
-				/* && 	elemento->zapatillas == actual.zapatillas && elemento->bikini == actual.bikini */) {
-
-					break;
-			}
-		}
-
-
-		if (elemento == generados.end()) {
-			generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
-		}
-		else if (elemento->bateria < actual.bateria_restante && actual.bateria_restante >= 0) {
-			generados.erase(elemento);
-			generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
-		}
-	};
-
 
 //
 // ──────────────────────────────────────────── BUCLE PRINCIPAL DEL ALGORITMO ─────
 //
 
-	nodo node;
-	node.st = origen;
-	node.secuencia.clear();
+	nodo_A actual;
 
-	nodo_bateria actual = {node, sensor.bateria, false, false};
-	a_expandir.push(actual);
+	actual.st.fila          = origen.fila;
+	actual.st.columna       = origen.columna;
+	actual.st.orientacion   = origen.orientacion;
+	actual.coste_hasta_aqui = 0;
+	actual.st.coste         = 0;
+	actual.bikini           = false;
+	actual.zapatillas       = false;
 
-	while (!a_expandir.empty()) {
-		/*
-		 	Estructura de desarrollo de los hijos:
-			Plantear un nuevo nodo con los datos del actual. Cambiar orientación o dar paso hacia adelante.
-			Estos procesos gastan batería. Por tanto, dependiendo de lo que haga, restar el consumo correspondiente.
+	a_expandir.insert(actual);
 
-			Debemos tener en cuenta que podríamos haber cogido las zapatillas o el bikini. Si es así,
-			el consumo se reducirá, y se debe actualizar su presencia en los nodos.
-		*/
+	while (!a_expandir.empty() && (actual.st.fila != destino.fila || actual.st.columna != destino.columna)) {
+		a_expandir.erase(a_expandir.begin());
+		generados.insert(actual.st);
 
-		a_expandir.pop();
-		insercion_optimizada(actual);
 
-		if (	actual.node.st.fila == destino.fila && actual.node.st.columna == destino.columna
-			&&  actual.bateria_restante >= 0 && mejor_solucion.bateria_restante < actual.bateria_restante) {
 
-			mejor_solucion = actual;
-			cout << "Nueva solución encontrada:" << actual.node.st.fila << ", " << actual.node.st.columna << ". Batería: "<< actual.bateria_restante << ". Por expandir: " << a_expandir.size() << ". Generados: " << generados.size() << endl;
+	//
+	// ────────────────────────────────────────────── HIJO DERECHA ─────
+	//
+
+		nodo_A hijo_TR = actual;
+		hijo_TR.st.orientacion = (hijo_TR.st.orientacion + 1)%4;
+
+		if (generados.find(hijo_TR.st) == generados.end()) {
+			hijo_TR.coste_hasta_aqui += calcular_costo_bateria(hijo_TR.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
+			hijo_TR.st.coste = hijo_TR.coste_hasta_aqui;
+
+			// Buscar por si tenemos que expandirlo
+			auto it = encontrar_en_expandir(hijo_TR);
+
+			if (it != a_expandir.end() && hijo_TR.coste_hasta_aqui < it->coste_hasta_aqui) {
+				// Sustituir
+				a_expandir.erase(it);
+				hijo_TR.secuencia.push_back(actTURN_R);
+				a_expandir.insert(hijo_TR);
+
+			}
+			else {
+				hijo_TR.secuencia.push_back(actTURN_R);
+				a_expandir.insert(hijo_TR);
+			}
+
+
 		}
-		else if (actual.bateria_restante > 0) {
 
-		//
-		// ────────────────────────────────────────────── HIJO DERECHA ─────
-		//
+	//
+	// ──────────────────────────────────────────── HIJO IZQUIERDA ─────
+	//
 
-			nodo_bateria hijo_TR = actual;
+		nodo_A hijo_TL = actual;
 
-			hijo_TR.node.st.orientacion  = (hijo_TR.node.st.orientacion + 1)%4;
-			hijo_TR.bateria_restante    -= calcular_costo_bateria(hijo_TR.node.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
-			hijo_TR.bateria_restante     = min(hijo_TR.bateria_restante, 3000);
+		hijo_TL.st.orientacion = (hijo_TL.st.orientacion + 3)%4;
 
-			if (comprobar_viabilidad(hijo_TR)) {
-				hijo_TR.node.secuencia.push_back(actTURN_R);
-				a_expandir.push(hijo_TR);
+		if (generados.find(hijo_TL.st) == generados.end()) {
+			hijo_TL.coste_hasta_aqui += calcular_costo_bateria(hijo_TL.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
+			hijo_TL.st.coste = hijo_TL.coste_hasta_aqui;
+
+			// Buscar por si tenemos que expandirlo
+			auto it = encontrar_en_expandir(hijo_TL);
+
+			if (it != a_expandir.end() && hijo_TL.coste_hasta_aqui < it->coste_hasta_aqui) {
+				// Sustituir
+				a_expandir.erase(it);
+				hijo_TL.secuencia.push_back(actTURN_L);
+				a_expandir.insert(hijo_TL);
+
 			}
-
-		//
-		// ──────────────────────────────────────────── HIJO IZQUIERDA ─────
-		//
-
-			nodo_bateria hijo_TL = actual;
-
-			hijo_TL.node.st.orientacion  = (hijo_TL.node.st.orientacion + 3)%4;
-			hijo_TL.bateria_restante    -= calcular_costo_bateria(hijo_TL.node.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
-			hijo_TL.bateria_restante     = min(3000, hijo_TL.bateria_restante);
-
-			if (comprobar_viabilidad(hijo_TL)) {
-				hijo_TL.node.secuencia.push_back(actTURN_L);
-				a_expandir.push(hijo_TL);
+			else {
+				hijo_TL.secuencia.push_back(actTURN_L);
+				a_expandir.insert(hijo_TL);
 			}
 
 
-
-		//
-		// ──────────────────────────────────────────── HIJO DELANTERO ─────
-		//
+		}
 
 
-			nodo_bateria hijo_forward = actual;
 
-			hijo_forward.bateria_restante -= calcular_costo_bateria(hijo_forward.node.st, actFORWARD, hijo_forward.zapatillas, hijo_forward.bikini);
-			hijo_forward.bateria_restante  = min(3000, hijo_forward.bateria_restante);
+	//
+	// ──────────────────────────────────────────── HIJO DELANTERO ─────
+	//
 
 
-			if (!HayObstaculoDelante(hijo_forward.node.st) && comprobar_viabilidad(hijo_forward)) {
-				hijo_forward.node.secuencia.push_back(actFORWARD);
+		nodo_A hijo_forward = actual;
 
-				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'K')
-					hijo_forward.bikini = true;
-				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'D')
-					hijo_forward.zapatillas = true;
-				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'X') {
-					while (hijo_forward.bateria_restante < 3000) {
-						hijo_forward.node.secuencia.push_back(actIDLE);
-						hijo_forward.bateria_restante += 10;
-					}
 
-					hijo_forward.bateria_restante = min(3000, hijo_forward.bateria_restante);
+
+		if (!HayObstaculoDelante(hijo_forward.st) && generados.find(hijo_forward.st) == generados.end()) {
+			hijo_forward.coste_hasta_aqui += calcular_costo_bateria(hijo_forward.st, actFORWARD, hijo_forward.zapatillas, hijo_forward.bikini);
+			hijo_forward.st.coste = hijo_forward.coste_hasta_aqui;
+
+			if (mapaResultado[hijo_forward.st.fila][hijo_forward.st.columna] == 'K')
+				hijo_forward.bikini = true;
+			if (mapaResultado[hijo_forward.st.fila][hijo_forward.st.columna] == 'D')
+				hijo_forward.zapatillas = true;
+/* 			if (mapaResultado[hijo_forward.st.fila][hijo_forward.st.columna] == 'X') {
+				while (hijo_forward.coste_hasta_aqui > 0) {
+					hijo_forward.secuencia.push_back(actIDLE);
+					hijo_forward.coste_hasta_aqui -= 10;
 				}
 
-				a_expandir.push(hijo_forward);
+				hijo_forward.coste_hasta_aqui = max(0, int(hijo_forward.coste_hasta_aqui));
+			}
+
+ */			auto it = encontrar_en_expandir(hijo_forward);
+
+			if (it != a_expandir.end()) {
+				if (hijo_forward.coste_hasta_aqui < it->coste_hasta_aqui) {
+					a_expandir.erase(it);
+					hijo_forward.secuencia.push_back(actFORWARD);
+					a_expandir.insert(hijo_forward);
+				}
+			}
+			else {
+				hijo_forward.secuencia.push_back(actFORWARD);
+				a_expandir.insert(hijo_forward);
 			}
 		}
 
+
 		if (!a_expandir.empty()) {
-			actual = a_expandir.top();
+			actual = *(a_expandir.begin());
 		}
 	}
 
-	if (mejor_solucion.bateria_restante >= 0) {
+	if (actual.st.fila == destino.fila && actual.st.columna == destino.columna) {
 		cout << "Cargando plan\n";
-		plan = mejor_solucion.node.secuencia;
+		plan = actual.secuencia;
 
 		cout << "Longitud del plan:" << plan.size() << endl;
 		PintaPlan(plan);
@@ -797,19 +765,6 @@ pair<int, int> ComportamientoJugador::hay_powerups_cerca (Sensores sensor) {
 	return destino;
 }
 
-
-class estado_A: public estado {
-public:
-	double coste = 0;
-};
-
-class nodo_A: public nodo {
-public:
-	estado_A st;
-	double coste_hasta_aqui = 0;
-	bool   zapatillas       = false;
-	bool   bikini           = false;
-};
 
 bool ComportamientoJugador::A_estrella(const estado &origen, const estado &destino, list<Action> &plan, const Sensores &sensor) {
 	cout << "Calculando ruta\n";
