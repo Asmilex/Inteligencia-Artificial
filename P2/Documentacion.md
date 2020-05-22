@@ -11,16 +11,12 @@
 	- [Preámbulos](#pre%c3%a1mbulos)
 	- [Búsqueda en anchura](#b%c3%basqueda-en-anchura)
 	- [Costo Uniforme](#costo-uniforme)
-			- [Modificación del nodo](#modificaci%c3%b3n-del-nodo)
-			- [Modificación de la estructura estado](#modificaci%c3%b3n-de-la-estructura-estado)
+			- [Estructuras de datos](#estructuras-de-datos)
 			- [Funciones auxiliares](#funciones-auxiliares)
 			- [Algoritmo principal](#algoritmo-principal)
-	- [A* modificado](#a-modificado)
+	- [Reto: A*](#reto-a)
 	- [El método think](#el-m%c3%a9todo-think)
-	- [Algunos resultados](#algunos-resultados)
-			- [mapa30.map](#mapa30map)
-			- [mapa50.map](#mapa50map)
-			- [mapa75.map](#mapa75map)
+	- [Conclusiones](#conclusiones)
 
 <!-- /code_chunk_output -->
 
@@ -82,55 +78,30 @@ while (!a_expandir.empty() && (actual.st.fila != destino.fila || actual.st.colum
 
 ## Costo Uniforme
 
-Quizás el algoritmo que requiere de más modificaciones. Para completar este nivel tenemos que encontrar el camino mediante el cual se llega al destino con el mayor nivel de batería posible. Por ello, podría ocurrir que debamos pararnos a recargar en alguna de las estaciones de recarga del mapa. El árbol de posibilidades será muy amplio.
+Quizás el algoritmo que requiere de más modificaciones. Para completar este nivel tenemos que encontrar el camino mediante el cual se llega al destino con el menor gasto de batería posible. Por ello, podría ocurrir que debamos pararnos a recargar en alguna de las estaciones de recarga del mapa. El árbol de posibilidades será muy amplio.
 
 La disposición básica del algoritmo es análoga a la de los dos anteriores. Sin embargo, necesitamos alterar las estructuras de datos para tener en cuenta tanto batería como zapatillas y bikini. No nos podemos basar en el sensor para esto.
 
 Introducimos, por tanto, las siguientes:
 
-#### Modificación del nodo
+#### Estructuras de datos
 ```C++
-// Extensión de los nodos para contabilizar el gasto de energía.
-struct nodo_bateria {
-    nodo node;
-    int bateria_restante;
-    bool zapatillas;
-    bool bikini;
+class estado_A: public estado {
+public:
+	double coste = 0;
+	bool zapatillas = false;
+	bool bikini = false;
+};
+
+class nodo_A: public nodo {
+public:
+	estado_A st;
+	double coste_hasta_aqui = 0;
+	bool   zapatillas       = false;
+	bool   bikini           = false;
 };
 ```
-
-Podría haberse realizado mediante una herencia. Sin embargo, decidí optar por esto.
-
-#### Modificación de la estructura estado
-
-```C++
-// Extensión del estado para contabilizar la batería.
-struct estado_bateria {
-    estado st;
-    int bateria;
-    bool zapatillas;
-    bool bikini;
-
-    bool operator==(const estado_bateria& otro) const {
-        return 		st.fila == otro.st.fila
-                && 	st.columna == otro.st.columna
-                &&  st.orientacion == otro.st.orientacion
-                && 	bateria == otro.bateria
-                && 	zapatillas == otro.zapatillas
-                && 	bikini == otro.bikini;
-    }
-
-    bool operator< (const estado_bateria& otro) const {
-        if ((st.fila > otro.st.fila) || (st.fila == otro.st.fila && st.columna > otro.st.columna) ||
-            (st.fila == otro.st.fila && st.columna == otro.st.columna && st.orientacion > otro.st.orientacion))
-            return true;
-        else
-            return false;
-    }
-};
-```
-
-Los dos operadores nos ayudarán a simplificar la definición del conjunto de nodos generados, así como realizar comparaciones entre estados. Además, esta estructura lleva asociada un hash en Costo Uniforme:
+Estas nuevas clases se usarán también para el nivel 4. Por otra parte, la estructura estado_bateria tendrá asociado un hash:
 
 ```C++
 // Bateria -> B, fila -> f, columna -> c, zapatilla -> z, bikini -> b
@@ -168,15 +139,41 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion, b
 
 	switch (casilla)
 	{
-		case 'A': if (bikini) costo = 10; else costo = 100;
+		case 'A':
+			if (bikini)
+				costo = 10;
+			else
+				costo = 100;
+
 			break;
-		case 'B': if (zapatillas) costo = 5; else costo = 50;
+
+		case 'B':
+			if (zapatillas)
+				costo = 5;
+			else
+				costo = 50;
+
 			break;
-		case 'T': costo = 2;
-            break;
-		case 'X': costo = -10;
-            break;
-		default:  costo = 1;
+
+		case 'T':
+			costo = 2;
+			break;
+
+		case '?':
+			if (bikini && zapatillas)
+				costo =  7;
+			else if (bikini)
+				costo = 10;
+			else if (zapatillas)
+				costo = 5;
+			break;
+
+		case 'X':
+			costo = -10;
+			break;
+
+		default:
+			costo = 1;
 			break;
 	}
 
@@ -186,146 +183,178 @@ int ComportamientoJugador::calcular_costo_bateria(estado state, Action accion, b
 
 Podemos ver que las estaciones de recarga las tratamos mediante un decremento negativo, lo cual supondrá un incremento.
 
-Para optimizar las inserciones, así como la comprobación de la viabilidad de un nodo, usaremos las siguientes lambdas dentro del algoritmo:
+Más tarde veremos el por qué del '?'.
+
+En el algoritmo, nos apoyaremos de la siguiente función lambda para simplificar el algoritmo:
 
 ```C++
-auto prioridad_nodo_bateria = [](const nodo_bateria& n1, const nodo_bateria& n2) {
-    return n1.bateria_restante < n2.bateria_restante;
-};
-
-auto comprobar_viabilidad = [&generados, &mejor_solucion, destino](nodo_bateria actual) {
-    bool es_viable = true;
-
-    if (actual.bateria_restante < 0){
-        es_viable = false;
-    }
-    else {
-        for (const auto elemento: generados) {
-            if (	elemento.st.fila == actual.node.st.fila
-                &&  elemento.st.columna == actual.node.st.columna
-                && 	elemento.st.orientacion == actual.node.st.orientacion
-                //&&	elemento.zapatillas == actual.zapatillas
-                //&& 	elemento.bikini == actual.bikini
-                && 	elemento.bateria >= actual.bateria_restante) {
-
-                es_viable = false;
-                break;
-            }
-        }
-    }
-
-    return es_viable;
-};
-
-auto insercion_optimizada = [&generados](nodo_bateria actual) {
-    auto elemento = generados.begin();
-    for (elemento; elemento != generados.end(); elemento++) {
-        if (	elemento->st.fila == actual.node.st.fila && elemento->st.columna == actual.node.st.columna
-            &&  elemento->st.orientacion == actual.node.st.orientacion
-            /* && 	elemento->zapatillas == actual.zapatillas && elemento->bikini == actual.bikini */) {
-
-                break;
-        }
-    }
-
-
-    if (elemento == generados.end()) {
-        generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
-    }
-    else if (elemento->bateria < actual.bateria_restante && actual.bateria_restante >= 0) {
-        generados.erase(elemento);
-        generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
-    }
+auto encontrar_en_expandir = [&a_expandir](const nodo_A& nodo) {
+	for (multiset<nodo_A, prioridad_nodo_bateria>::const_iterator it = a_expandir.begin(); it != a_expandir.end(); ++it) {
+		if ((*it).st.fila == nodo.st.fila && (*it).st.columna == nodo.st.columna && (*it).st.orientacion == nodo.st.orientacion && (*it).zapatillas == nodo.zapatillas && (*it).bikini == nodo.bikini) {
+			return it;
+		}
+	}
+	return a_expandir.end();
 };
 ```
+
+Finalmente, ordenaremos la cola de abiertos atendiendo al costo de una acción:
+
+```C++
+struct prioridad_nodo_bateria {
+	bool operator()(const nodo_A& n1, const nodo_A& n2){
+		return n1.coste_hasta_aqui < n2.coste_hasta_aqui;
+	}
+};
+```
+
 
 #### Algoritmo principal
 Finalmente, este es el algoritmo:
 
 ```C++
-priority_queue<nodo_bateria, vector<nodo_bateria>, decltype(prioridad_nodo_bateria)> a_expandir(prioridad_nodo_bateria);
-
-unordered_set<estado_bateria, hash_estado_bateria> generados;
-nodo_bateria mejor_solucion = {};
-
-
-nodo node;
-node.st = origen;
-node.secuencia.clear();
-
-nodo_bateria actual = {node, sensor.bateria, false, false};
-a_expandir.push(actual);
-
-while (!a_expandir.empty()) {
-    a_expandir.pop();
-    insercion_optimizada(actual);
-
-    if (	actual.node.st.fila == destino.fila && actual.node.st.columna == destino.columna
-        &&  actual.bateria_restante >= 0 && mejor_solucion.bateria_restante < actual.bateria_restante) {
-
-        mejor_solucion = actual;
-        cout << "Nueva solución encontrada:" << actual.node.st.fila << ", " << actual.node.st.columna << ". Batería: "<< actual.bateria_restante << ". Por expandir: " << a_expandir.size() << ". Generados: " << generados.size() << endl;
-    }
-    else if (actual.bateria_restante > 0) {
-
-    //
-    // ────────────────────────────────────────────── HIJO DERECHA ─────
-    //
-
-        nodo_bateria hijo_TR = actual;
-        hijo_TR.node.st.orientacion = (hijo_TR.node.st.orientacion + 1)%4;
-        hijo_TR.bateria_restante -= calcular_costo_bateria(hijo_TR.node.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
-
-        if (actual.bateria_restante > mejor_solucion.bateria_restante && comprobar_viabilidad(hijo_TR)) {
-            hijo_TR.node.secuencia.push_back(actTURN_R);
-            a_expandir.push(hijo_TR);
-        }
-
-    //
-    // ──────────────────────────────────────────── HIJO IZQUIERDA ─────
-    //
-
-            // Análogo; corto para reducir el tamaño del PDF
-
-    //
-    // ──────────────────────────────────────────── HIJO DELANTERO ─────
-    //
+bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, const estado &origen, const estado &destino, list<Action> &plan) {
+	cout << "Calculando ruta\n";
+	plan.clear();
 
 
-        nodo_bateria hijo_forward = actual;
-        hijo_forward.bateria_restante -= calcular_costo_bateria(hijo_forward.node.st, actFORWARD, hijo_forward.zapatillas, hijo_forward.bikini);
+
+//
+// ─────────────────────────────────────────────── ESTRUCTURAS DE DATOS CLAVE ─────
+//
 
 
-        if (!HayObstaculoDelante(hijo_forward.node.st) && actual.bateria_restante > mejor_solucion.bateria_restante && comprobar_viabilidad(hijo_forward)) {
-            hijo_forward.node.secuencia.push_back(actFORWARD);
+	multiset<nodo_A, prioridad_nodo_bateria> a_expandir;
+	set<estado_A, ComparaEstados> generados;
 
-            if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'K')
-                hijo_forward.bikini = true;
-            if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'D')
-                hijo_forward.zapatillas = true;
-            if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'X') {
 
-                while (hijo_forward.bateria_restante < 3000) {
-                    hijo_forward.node.secuencia.push_back(actIDLE);
-                    hijo_forward.bateria_restante += 10;
-                }
+//
+// ──────────────────────────────────────────── BUCLE PRINCIPAL DEL ALGORITMO ─────
+//
 
-                hijo_forward.bateria_restante = max(3000, hijo_forward.bateria_restante);
-            }
+	nodo_A actual;
 
-            a_expandir.push(hijo_forward);
-        }
-    }
+	actual.st.fila          = origen.fila;
+	actual.st.columna       = origen.columna;
+	actual.st.orientacion   = origen.orientacion;
+	actual.coste_hasta_aqui = 0;
+	actual.st.coste         = 0;
+	actual.bikini           = false;
+	actual.zapatillas       = false;
 
-    if (!a_expandir.empty()) {
-        actual = a_expandir.top();
-    }
+	a_expandir.insert(actual);
 
-    // Cargar plan
+	while (!a_expandir.empty() && (actual.st.fila != destino.fila || actual.st.columna != destino.columna)) {
+		a_expandir.erase(a_expandir.begin());
+		generados.insert(actual.st);
+
+
+
+	//
+	// ────────────────────────────────────────────── HIJO DERECHA ─────
+	//
+
+		nodo_A hijo_TR = actual;
+		hijo_TR.st.orientacion = (hijo_TR.st.orientacion + 1)%4;
+
+		if (generados.find(hijo_TR.st) == generados.end()) {
+			hijo_TR.coste_hasta_aqui += calcular_costo_bateria(hijo_TR.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
+			hijo_TR.st.coste = hijo_TR.coste_hasta_aqui;
+
+			// Buscar por si tenemos que expandirlo
+			auto it = encontrar_en_expandir(hijo_TR);
+
+			if (it != a_expandir.end() && hijo_TR.coste_hasta_aqui < it->coste_hasta_aqui) {
+				// Sustituir
+				a_expandir.erase(it);
+				hijo_TR.secuencia.push_back(actTURN_R);
+				a_expandir.insert(hijo_TR);
+
+			}
+			else {
+				hijo_TR.secuencia.push_back(actTURN_R);
+				a_expandir.insert(hijo_TR);
+			}
+
+
+		}
+
+	//
+	// ──────────────────────────────────────────── HIJO IZQUIERDA ─────
+	//
+
+		nodo_A hijo_TL = actual;
+
+		hijo_TL.st.orientacion = (hijo_TL.st.orientacion + 3)%4;
+
+		if (generados.find(hijo_TL.st) == generados.end()) {
+			hijo_TL.coste_hasta_aqui += calcular_costo_bateria(hijo_TL.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
+			hijo_TL.st.coste = hijo_TL.coste_hasta_aqui;
+
+			// Buscar por si tenemos que expandirlo
+			auto it = encontrar_en_expandir(hijo_TL);
+
+			if (it != a_expandir.end() && hijo_TL.coste_hasta_aqui < it->coste_hasta_aqui) {
+				// Sustituir
+				a_expandir.erase(it);
+				hijo_TL.secuencia.push_back(actTURN_L);
+				a_expandir.insert(hijo_TL);
+
+			}
+			else {
+				hijo_TL.secuencia.push_back(actTURN_L);
+				a_expandir.insert(hijo_TL);
+			}
+
+
+		}
+
+
+
+	//
+	// ──────────────────────────────────────────── HIJO DELANTERO ─────
+	//
+
+
+		nodo_A hijo_forward = actual;
+
+
+
+		if (!HayObstaculoDelante(hijo_forward.st) && generados.find(hijo_forward.st) == generados.end()) {
+			hijo_forward.coste_hasta_aqui += calcular_costo_bateria(hijo_forward.st, actFORWARD, hijo_forward.zapatillas, hijo_forward.bikini);
+			hijo_forward.st.coste = hijo_forward.coste_hasta_aqui;
+
+			if (mapaResultado[hijo_forward.st.fila][hijo_forward.st.columna] == 'K')
+				hijo_forward.bikini = true;
+			if (mapaResultado[hijo_forward.st.fila][hijo_forward.st.columna] == 'D')
+				hijo_forward.zapatillas = true;
+
+			auto it = encontrar_en_expandir(hijo_forward);
+
+			if (it != a_expandir.end()) {
+				if (hijo_forward.coste_hasta_aqui < it->coste_hasta_aqui) {
+					a_expandir.erase(it);
+					hijo_forward.secuencia.push_back(actFORWARD);
+					a_expandir.insert(hijo_forward);
+				}
+			}
+			else {
+				hijo_forward.secuencia.push_back(actFORWARD);
+				a_expandir.insert(hijo_forward);
+			}
+		}
+
+
+		if (!a_expandir.empty()) {
+			actual = *(a_expandir.begin());
+		}
+	}
+
+	// Cargar plan
 }
 ```
 
-## A* modificado
+## Reto: A*
 
 La metodología ahora cambia un poco. Hemos pasado de tener toda la información del mapa que nos permitía calcular planes perfectos, a necesitar deambular a ciegas. Por ello, necesitaremos actualizar la información conforme avancemos.
 
@@ -343,81 +372,152 @@ bool ComportamientoJugador::hay_NPC_delante(Sensores sensor) {
 }
 ```
 
-El algoritmo que usaremos será una modificación de A* en el que tenga en cuenta la batería. Usaremos el planteamiento básico de Costo Uniforme para hacerlo. Pero, esta vez, no esperaremos a tener todo el árbol generado; sino que cortaremos en cuanto encontremos una solución. La heurística debe ser, por tanto, acertada.
+El algoritmo que usaremos será A*. Es un método de pathfinding muy famoso, sencillo de implementar y que produce resultados bastante buenos. Sabemos que el coste de una acción viene dado por $f = g + h$, donde $h$ es una heurística, y $g$ el peso de realizar la acción en el grafo.
 
-La que usaremos será:
+La heurística que usaremos será la distancia Manhattan:
 
 ```C++
-auto heuristica = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
-	return distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) - int(0 * n2.bateria_restante)
-				<
-			distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna) - int(0 * n1.bateria_restante);
+double distancia (int fila_0, int columna_0, int fila_destino, int columna_destino) {
+	return abs(fila_0 - fila_destino) + abs(columna_0 - columna_destino);
 };
 ```
 
-En mi experiencia, el ajuste de los pesos que acompañan a la batería cambia radicalmente el resultado. Por ejemplo, usando `*2`, hace que obtenga 96 resultados con la ejecución `./BelkanSG mapas/mapa30.map 1 4 9 12 1 3 3`, mientras que con `*3`, se obtienen 117.
+A lo largo del recorrido obtendremos dos tipos de powerups: las zapatillas y el bikini. En mi experiencia, cuando se tienen ambas, el número de objetivos suele mejorar cuanto menos en cuenta se tiene la batería. Por tanto, usaremos unos pesos dinámicos en el cálculo del coste de los hijos:
 
-Curiosamente, el peso que mejor resultados obtiene es el de 0; lo cual hace que sea un A* esencialmente.
+```C++
+double peso_h = 1;
+double peso_g = 1;
 
-Este es el cuerpo de la función:
+if (bikini && zapatillas) {
+	peso_h = 2;
+}
+
+//...
+
+coste_TR =
+	  peso_h * distancia(hijo.st.fila, hijo.st.columna, destino.fila, destino.columna)
+	+ peso_g * calcular_costo_bateria(hijo.st, accion, hijo.zapatillas, hijo.bikini);
+```
+
+
+Volviendo a la función del cálculo del coste, destacamos la siguiente línea:
+
+```C++
+
+case '?':
+	if (bikini && zapatillas)
+		costo =  7;
+	else if (bikini)
+		costo = 10;
+	else if (zapatillas)
+		costo = 5;
+	break;
+```
+
+La estrategia seguida es la misma. Cuando tengamos alguna de ellas, quitaremos peso a la casilla de interrogación, pues, nos encontremos lo que nos encontremos, el gasto será razonable. Por el contrario, si nos falta alguna de ellas, debemos andarnos con ojo, pues el coste puede llegar a ser de 100. Por último, si no tenemos ninguna de las dos, el coste será despreciable, para forzar a explorar el mapa.
+
+El resto del algoritmo es similar a los otros. Lo único destacable es que, cuando nos encontramos delante de un enano, no desarrollamos el hijo que avanza. Para que no nos haga body blocking.
+
+Finalmente, este es el algoritmo:
 
 ```C++
 bool ComportamientoJugador::A_estrella(const estado &origen, const estado &destino, list<Action> &plan, const Sensores &sensor) {
 	cout << "Calculando ruta\n";
 	plan.clear();
 
-	auto heuristica = [&destino](const nodo_bateria& n1, const nodo_bateria& n2) {
-		return distancia(n2.node.st.fila, n2.node.st.columna, destino.fila, destino.columna) - int(0 * n2.bateria_restante)
-					<
-			   distancia(n1.node.st.fila, n1.node.st.columna, destino.fila, destino.columna) - int(0 * n1.bateria_restante);
+	auto ordenar_prioridades = [](const nodo_A n1, const nodo_A n2) {
+		return n1.coste_hasta_aqui > n2.coste_hasta_aqui;
 	};
 
-	priority_queue<nodo_bateria, vector<nodo_bateria>, decltype(heuristica)> a_expandir (heuristica);
-	set<estado_bateria> generados;
+	priority_queue<nodo_A, vector<nodo_A>, decltype(ordenar_prioridades)> a_expandir (ordenar_prioridades);
+	set<estado, ComparaEstados> generados;
 
-	nodo node;
-	node.st = origen;
-	node.secuencia.clear();
-	nodo_bateria actual = {node, sensor.bateria, this->zapatillas, this->bikini};
+	nodo_A actual;
+
+	actual.st.fila        = origen.fila;
+	actual.st.columna     = origen.columna;
+	actual.st.orientacion = origen.orientacion;
+	actual.zapatillas     = zapatillas;
+	actual.bikini         = bikini;
+
+	actual.secuencia.clear();
 
 	a_expandir.push(actual);
 
-	while (!a_expandir.empty() && (actual.node.st.fila != destino.fila || actual.node.st.columna != destino.columna)) {
+	double peso_h = 1;
+	double peso_g = 1;
+
+	if (bikini && zapatillas) {
+		peso_h = 2;
+	}
+
+	while (!a_expandir.empty() && (actual.st.fila != destino.fila || actual.st.columna != destino.columna)) {
 		a_expandir.pop();
-		generados.insert({actual.node.st, actual.bateria_restante, actual.zapatillas, actual.bikini});
+		generados.insert(actual.st);
 
-		nodo_bateria hijo_TR = actual;
-		hijo_TR.node.st.orientacion = (hijo_TR.node.st.orientacion + 1)%4;
-		hijo_TR.bateria_restante -= calcular_costo_bateria(hijo_TR.node.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
+//
+// ───────────────────────────────────────────────────────────── HIJO DERECHA ─────
+//
 
-		if (generados.find({hijo_TR.node.st, hijo_TR.bateria_restante, hijo_TR.zapatillas, hijo_TR.bikini}) == generados.end()) {
-			hijo_TR.node.secuencia.push_back(actTURN_R);
+		nodo_A hijo_TR = actual;
+		hijo_TR.st.orientacion = (hijo_TR.st.orientacion + 1)%4;
+
+		int coste_TR =
+			  peso_h * distancia(hijo_TR.st.fila, hijo_TR.st.columna, destino.fila, destino.columna)
+			+ peso_g * calcular_costo_bateria(hijo_TR.st, actTURN_R, hijo_TR.zapatillas, hijo_TR.bikini);
+
+		hijo_TR.coste_hasta_aqui = coste_TR;
+		hijo_TR.st.coste = coste_TR;
+
+		if (generados.find(hijo_TR.st) == generados.end()) { // Si no está el hijo en la lista de generados
+
+			hijo_TR.secuencia.push_back(actTURN_R);
 			a_expandir.push(hijo_TR);
 		}
 
+//
+// ─────────────────────────────────────────────────────────── HIJO IZQUIERDA ─────
+//
 
-		nodo_bateria hijo_TL = actual;
-		hijo_TL.node.st.orientacion = (hijo_TL.node.st.orientacion + 3)%4;
-		hijo_TL.bateria_restante -= calcular_costo_bateria(hijo_TL.node.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
+		nodo_A hijo_TL = actual;
+		hijo_TL.st.orientacion = (hijo_TL.st.orientacion + 3)%4;
+		int coste_TL =
+			  peso_h * distancia(hijo_TL.st.fila, hijo_TL.st.columna, destino.fila, destino.columna)
+			+ peso_g * calcular_costo_bateria(hijo_TL.st, actTURN_L, hijo_TL.zapatillas, hijo_TL.bikini);
 
-		if (generados.find({hijo_TL.node.st, hijo_TL.bateria_restante, hijo_TL.zapatillas, hijo_TL.bikini}) == generados.end()) {
-			hijo_TL.node.secuencia.push_back(actTURN_L);
+		hijo_TL.coste_hasta_aqui = coste_TL;
+		hijo_TL.st.coste = coste_TL;
+
+		if (generados.find(hijo_TL.st) == generados.end()) { // Si no está el hijo en la lista de generados
+			hijo_TL.secuencia.push_back(actTURN_L);
 			a_expandir.push(hijo_TL);
 		}
 
+//
+// ─────────────────────────────────────────────────────── HIJO HACIA DELANTE ─────
+//
 
-		nodo_bateria hijo_forward = actual;
+		nodo_A hijo_forward = actual;
+		// Comrpobar que en la casilla de delante del origen no hay un NPC
+		int sig_fila_origen = origen.fila, sig_col_origen = origen.columna;
+		switch (origen.orientacion) {
+			case 0: sig_fila_origen--; break;
+			case 1: sig_col_origen++; break;
+			case 2: sig_fila_origen++; break;
+			case 3: sig_col_origen--; break;
+		};
 
+		int coste_forward =
+			  peso_h * distancia(hijo_forward.st.fila, hijo_forward.st.columna, destino.fila, destino.columna)
+			+ peso_g * calcular_costo_bateria(hijo_forward.st, actFORWARD, hijo_forward.zapatillas, hijo_forward.bikini);
 
-		if ( !HayObstaculoDelante(hijo_forward.node.st)) {
-			if ( generados.find({hijo_forward.node.st, hijo_forward.bateria_restante, hijo_forward.zapatillas, hijo_forward.bikini}) == generados.end() ) {
-				hijo_forward.node.secuencia.push_back(actFORWARD);
+		hijo_forward.coste_hasta_aqui = coste_forward;
+		hijo_forward.st.coste = coste_forward;
 
-				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'K')
-					hijo_forward.bikini = true;
-				if (mapaResultado[hijo_forward.node.st.fila][hijo_forward.node.st.columna] == 'D')
-					hijo_forward.zapatillas = true;
+		if ( !HayObstaculoDelante(hijo_forward.st)) {
+			if ( generados.find(hijo_forward.st) == generados.end() ) {
 
+				hijo_forward.secuencia.push_back(actFORWARD);
 				a_expandir.push(hijo_forward);
 			}
 		}
@@ -425,16 +525,7 @@ bool ComportamientoJugador::A_estrella(const estado &origen, const estado &desti
 		if (!a_expandir.empty()) {
 			actual = a_expandir.top();
 
-			// Comrpobar que en la casilla de delante del origen no hay un NPC
-			int sig_fila_origen = origen.fila, sig_col_origen = origen.columna;
-			switch (origen.orientacion) {
-				case 0: sig_fila_origen--; break;
-				case 1: sig_col_origen++; break;
-				case 2: sig_fila_origen++; break;
-				case 3: sig_col_origen--; break;
-			};
-
-			if (actual.node.st.fila == sig_fila_origen && actual.node.st.columna == sig_col_origen && hay_NPC_delante(sensor) && !a_expandir.empty()) {
+			if (actual.st.fila == sig_fila_origen && actual.st.columna == sig_col_origen && hay_NPC_delante(sensor) && !a_expandir.empty()) {
 				a_expandir.pop();
 				actual = a_expandir.top();
 			}
@@ -453,12 +544,21 @@ Los primeros niveles se gestionan prácticamente solos: basta con decirle al pat
 
 ```C++
 Action ComportamientoJugador::think(Sensores sensores) {
-	if (destino.fila == actual.fila && destino.columna == actual.columna) {
-		hayPlan = false;
+	static int recalculaciones = 0;
+
+	if (sensores.vida%4 == 0) {
+		acabo_de_calcular = false;
 	}
 
-	if (sensores.nivel == 4)
+	if (sensores.nivel == 4) {
 		actualizar_mapaResultado(sensores);
+
+		if (cuenta_nuevos_descub > 15) {
+			recalcular_nuevos_descub = true;
+			cuenta_nuevos_descub = 0;
+		}
+	}
+
 
 	actual.fila        = sensores.posF;
 	actual.columna     = sensores.posC;
@@ -466,53 +566,79 @@ Action ComportamientoJugador::think(Sensores sensores) {
 	fil                = actual.fila;
 	col                = actual.columna;
 	brujula            = actual.orientacion;
-	destino.fila       = sensores.destinoF;
-	destino.columna    = sensores.destinoC;
 
-	if (mapaResultado[sensores.posF][sensores.posC] == 'D')
+	if (destino.fila == actual.fila && destino.columna == actual.columna) {
+		hayPlan           = false;
+		recalculaciones   = 0;
+		acabo_de_calcular = false;
+		powerup_avistado  = false;
+	}
+
+	if (!hayPlan) {
+		destino.fila    = sensores.destinoF;
+		destino.columna = sensores.destinoC;
+	}
+
+
+	if (mapaResultado[actual.fila][actual.columna] == 'X') {
+		powerup_avistado = false;
+	}
+	if (mapaResultado[actual.fila][actual.columna] == 'D') {
 		zapatillas = true;
-	if (mapaResultado[sensores.posF][sensores.posC] == 'K')
+		if (!zapatillas)
+			powerup_avistado = false;
+	}
+	if (mapaResultado[actual.fila][actual.columna] == 'K') {
 		bikini = true;
+		if (!bikini)
+			powerup_avistado = false;
+	}
 
+
+	// No se hacen funciones con efectos secundarios
 	estado copia_actual = actual;
 
 	if (	plan.empty()
 		||  (plan.size() > 0 && plan.front() == actFORWARD && HayObstaculoDelante(copia_actual))	// He chocado con algo y no lo tenía previsto.
-		||  hay_NPC_delante(sensores)) {
+		||  hay_NPC_delante(sensores)
+		||  (recalcular_nuevos_descub && distancia(actual.fila, actual.columna, destino.fila, destino.columna) > 10 && !powerup_avistado) ) {
 
 		hayPlan = pathFinding(sensores, actual, destino, plan);
+		recalculaciones++;
+
+
+		if (recalcular_nuevos_descub)
+			recalcular_nuevos_descub = false;
 	}
+
 
 
 	if (sensores.nivel == 4) {
 		pair<int, int> powerups_cercanos = hay_powerups_cerca(sensores);
 
 		if (powerups_cercanos.first != -1 && powerups_cercanos.second != -1) {
-			estado destino_temp;
-			destino_temp.fila = powerups_cercanos.first;
-			destino_temp.columna = powerups_cercanos.second;
+			powerup_avistado = true;
+
+
+			destino.fila = powerups_cercanos.first;
+			destino.columna = powerups_cercanos.second;
 
 			bool es_recarga = mapaResultado[powerups_cercanos.first][powerups_cercanos.second] == 'X';
 
-			if (!es_recarga	|| (es_recarga && sensores.bateria < 1000)) {
-				hayPlan = pathFinding(sensores, actual, destino_temp, plan);
-
-
-				if (es_recarga) {
-					int lvl_bateria = sensores.bateria;
-
-					while (lvl_bateria < max(int(sensores.tiempo*2), 2000)) {
-						plan.push_back(actIDLE);
-						lvl_bateria += 10;
-					}
-				}
+			if (!acabo_de_calcular) {
+				if (!es_recarga || es_recarga && sensores.bateria < limite_inf_bateria)
+				hayPlan = pathFinding(sensores, actual, destino, plan);
+				acabo_de_calcular = true;
 			}
 		}
 	}
 
 	Action siguiente_accion = actIDLE;
 
-	if (hayPlan && plan.size() > 0) {
+	bool estoy_recargando = sensores.nivel == 4 && mapaResultado[actual.fila][actual.columna] == 'X' && sensores.bateria < min(int(sensores.vida * 1.5), limite_inf_bateria);
+
+
+	if ((hayPlan && plan.size() > 0) && (!estoy_recargando)) {
 		siguiente_accion = plan.front();
 		plan.erase(plan.begin());
 	}
@@ -521,45 +647,15 @@ Action ComportamientoJugador::think(Sensores sensores) {
 }
 ```
 
-- A cada tick de juego, se actualiza el mapa. Esto se hace por comodidad, pero es un gasto de recursos si ya se conoce lo que el sensor capta.
-- Casi todas las variables nuevas añadidas a la cabecera se actualizan a cada paso.
-- Se recalcula un plan bajo las siguientes condiciones:
-  1. No teníamos plan.
-  2. Se ha chocado con una pared.
-  3. Se ha chocado con un NPC que se ha movido.
-- En el nivel 4 detectamos si tenemos alguna casilla de recarga o de mejora cercana. Si se dan las condiciones adecuadas, se avanza hacia ellas. Esto es, no tenemos zapatillas o bikini; o nuestro nivel de batería cae por debajo de un límite. Si se cumple lo último, el enanito se quedará un rato esperando hasta que tenga un nivel aceptable de batería. Esta cantidad es un poco arbitraria, y lo he calculado empíricamente a ojo.
+Destaquemos las funcionalidades más relevantes, por orden de aparición:
+- Cada 4 ticks de juego se desactiva una variable. Esto es un bugfix que evita situaciones en las que el algoritmo recalcula más de la cuenta cuando tiene un powerup delante.
+- Si se descubren más de 15 posiciones en el mapa, las cuales antes teníamos marcadas con '?', se busca de nuevo la ruta. Esto permite sortear obstáculos y no ir a ciegas conforme investigamos.
+- Cuando se llega a un destino se anulan algunas condiciones activas para la modificación de la ruta on the fly.
+- Se recalcula el camino bajo alguna de las siguientes condiciones:
+	1. No tenemos plan
+	2. Tenemos plan, pero hemos chocado con un NPC o una pared.
+	3. Hallamos una casilla especial. Esto incluye zapatillas, bikini y recarga con nuestros sensores. Cuando se consiguen las dos primeras, no se tienen más en cuenta en la ruta. No obstante, la última sí. Si captamos una recarga, iremos siempre que nuestro nivel de batería esté por debajo del valor notado con `const int limite_inf_bateria = 2800`.  Además, se espera hasta tener un nivel aceptable, calculado dinámicamente con respecto al tiempo restante.
 
+## Conclusiones
 
-## Algunos resultados
-
-Para terminar, presento algunos resultados obtenidos mediante la ejecución de `./BelkanSG mapas/mapa.map 1 4 9 12 1 3 3`:
-
-#### mapa30.map
-```
-Instantes de simulacion no consumidos: 0
-Tiempo Consumido: 0.09375
-Nivel Final de Bateria: 648
-Colisiones: 0
-Muertes: 0
-Objetivos encontrados: 126
-```
-
-#### mapa50.map
-```
-Instantes de simulacion no consumidos: 458
-Tiempo Consumido: 0.015625
-Nivel Final de Bateria: 0
-Colisiones: 0
-Muertes: 0
-Objetivos encontrados: 60
-```
-
-#### mapa75.map
-```
-Instantes de simulacion no consumidos: 0
-Tiempo Consumido: 0.5625
-Nivel Final de Bateria: 1345
-Colisiones: 0
-Muertes: 0
-Objetivos encontrados: 33
-```
+En general, mis algoritmos intentan conseguir un balance entre agresividad y cautela. En las primeras fases de exploración, se procede con cautela buscando el camino de menos consumo. Sin embargo, conforme más herramientas se adquieren y menos tiempo queda restante, se intenta avanzar hacia el objetivo en línea recta dentro de lo razonable. Esto hace que en general se obtengan resultados adecuados.
