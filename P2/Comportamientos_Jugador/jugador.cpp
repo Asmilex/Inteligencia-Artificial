@@ -610,16 +610,8 @@ bool ComportamientoJugador::pathFinding_Costo_Uniforme(const Sensores sensor, co
 				hijo_forward.bikini = true;
 			if (mapaResultado[hijo_forward.st.fila][hijo_forward.st.columna] == 'D')
 				hijo_forward.zapatillas = true;
-/* 			if (mapaResultado[hijo_forward.st.fila][hijo_forward.st.columna] == 'X') {
-				while (hijo_forward.coste_hasta_aqui > 0) {
-					hijo_forward.secuencia.push_back(actIDLE);
-					hijo_forward.coste_hasta_aqui -= 10;
-				}
 
-				hijo_forward.coste_hasta_aqui = max(0, int(hijo_forward.coste_hasta_aqui));
-			}
-
- */			auto it = encontrar_en_expandir(hijo_forward);
+			auto it = encontrar_en_expandir(hijo_forward);
 
 			if (it != a_expandir.end()) {
 				if (hijo_forward.coste_hasta_aqui < it->coste_hasta_aqui) {

@@ -76,17 +76,6 @@ CMAKE_BINARY_DIR = /mnt/c/Users/Andre/Documentos/Repositorios/Inteligencia-Artif
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target edit_cache
-edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : edit_cache
-
-# Special rule for the target edit_cache
-edit_cache/fast: edit_cache
-
-.PHONY : edit_cache/fast
-
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
@@ -97,6 +86,17 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target edit_cache
+edit_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
+	/usr/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : edit_cache
+
+# Special rule for the target edit_cache
+edit_cache/fast: edit_cache
+
+.PHONY : edit_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -157,17 +157,17 @@ Belkan/fast:
 .PHONY : Belkan/fast
 
 #=============================================================================
-# Target rules for targets named obj3DLib
+# Target rules for targets named motorLib
 
 # Build rule for target.
-obj3DLib: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 obj3DLib
-.PHONY : obj3DLib
+motorLib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motorLib
+.PHONY : motorLib
 
 # fast build rule for target.
-obj3DLib/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/obj3DLib.dir/build.make CMakeFiles/obj3DLib.dir/build
-.PHONY : obj3DLib/fast
+motorLib/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/motorLib.dir/build.make CMakeFiles/motorLib.dir/build
+.PHONY : motorLib/fast
 
 #=============================================================================
 # Target rules for targets named GLUILib
@@ -183,19 +183,6 @@ GLUILib/fast:
 .PHONY : GLUILib/fast
 
 #=============================================================================
-# Target rules for targets named modelosBelkanLib
-
-# Build rule for target.
-modelosBelkanLib: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 modelosBelkanLib
-.PHONY : modelosBelkanLib
-
-# fast build rule for target.
-modelosBelkanLib/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelosBelkanLib.dir/build.make CMakeFiles/modelosBelkanLib.dir/build
-.PHONY : modelosBelkanLib/fast
-
-#=============================================================================
 # Target rules for targets named comportamientosLib
 
 # Build rule for target.
@@ -209,17 +196,30 @@ comportamientosLib/fast:
 .PHONY : comportamientosLib/fast
 
 #=============================================================================
-# Target rules for targets named motorLib
+# Target rules for targets named modelosBelkanLib
 
 # Build rule for target.
-motorLib: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motorLib
-.PHONY : motorLib
+modelosBelkanLib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 modelosBelkanLib
+.PHONY : modelosBelkanLib
 
 # fast build rule for target.
-motorLib/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/motorLib.dir/build.make CMakeFiles/motorLib.dir/build
-.PHONY : motorLib/fast
+modelosBelkanLib/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modelosBelkanLib.dir/build.make CMakeFiles/modelosBelkanLib.dir/build
+.PHONY : modelosBelkanLib/fast
+
+#=============================================================================
+# Target rules for targets named obj3DLib
+
+# Build rule for target.
+obj3DLib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 obj3DLib
+.PHONY : obj3DLib
+
+# fast build rule for target.
+obj3DLib/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/obj3DLib.dir/build.make CMakeFiles/obj3DLib.dir/build
+.PHONY : obj3DLib/fast
 
 Comportamientos_Jugador/aldeano.o: Comportamientos_Jugador/aldeano.cpp.o
 

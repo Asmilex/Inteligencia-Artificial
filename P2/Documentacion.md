@@ -7,16 +7,15 @@
 
 <!-- code_chunk_output -->
 
-- [Documentación práctica 2 - Belkan](#documentaci%c3%b3n-pr%c3%a1ctica-2---belkan)
-	- [Preámbulos](#pre%c3%a1mbulos)
-	- [Búsqueda en anchura](#b%c3%basqueda-en-anchura)
-	- [Costo Uniforme](#costo-uniforme)
-			- [Estructuras de datos](#estructuras-de-datos)
-			- [Funciones auxiliares](#funciones-auxiliares)
-			- [Algoritmo principal](#algoritmo-principal)
-	- [Reto: A*](#reto-a)
-	- [El método think](#el-m%c3%a9todo-think)
-	- [Conclusiones](#conclusiones)
+- [Preámbulos](#preámbulos)
+- [Búsqueda en anchura](#búsqueda-en-anchura)
+- [Costo Uniforme](#costo-uniforme)
+    - [Estructuras de datos](#estructuras-de-datos)
+    - [Funciones auxiliares](#funciones-auxiliares)
+    - [Algoritmo principal](#algoritmo-principal)
+- [Reto: A*](#reto-a)
+- [El método think](#el-método-think)
+- [Conclusiones](#conclusiones)
 
 <!-- /code_chunk_output -->
 
