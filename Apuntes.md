@@ -37,11 +37,11 @@
   - [2. ¿Qué es el factor de ramificación y cómo afecta a la complejidad de un juego? Describe en líneas generales el algoritmo minimax y el de la poda alfa-beta](#2-qué-es-el-factor-de-ramificación-y-cómo-afecta-a-la-complejidad-de-un-juego-describe-en-líneas-generales-el-algoritmo-minimax-y-el-de-la-poda-alfa-beta)
     - [Descripción](#descripción)
     - [Algoritmo](#algoritmo)
-    - [Optimizando con la poda alfa-beta](#optimizando-con-la-poda-alfa-beta)
+    - [Optimizando Minimax mediante la poda alfa-beta](#optimizando-minimax-mediante-la-poda-alfa-beta)
   - [3. ¿Qué problemas plantea el cálculo de predicados en la resolución de problemas de IA?](#3-qué-problemas-plantea-el-cálculo-de-predicados-en-la-resolución-de-problemas-de-ia)
     - [Problemas semánticos](#problemas-semánticos)
     - [Problemas computacionales](#problemas-computacionales)
-  - [4. Modelos de conocimiento heredable ¿Qué tipo de conocimiento organizan las redes semánticas? Describir en líneas generales el concepto de “frame”.](#4-modelos-de-conocimiento-heredable-qué-tipo-de-conocimiento-organizan-las-redes-semánticas-describir-en-líneas-generales-el-concepto-de-frame)
+  - [4. Modelos de conocimiento heredable ¿Qué tipo de conocimiento organizan las redes semánticas? Describir en líneas generales el concepto de "frame".](#4-modelos-de-conocimiento-heredable-qué-tipo-de-conocimiento-organizan-las-redes-semánticas-describir-en-líneas-generales-el-concepto-de-frame)
     - [Redes semánticas](#redes-semánticas)
     - [Frames](#frames)
     - [Faceta](#faceta)
@@ -265,7 +265,7 @@ Intuitivamente, es obvio que la primera solución encontrada debe ser la óptima
 
 En grafos finitos con aristas no negativas, A* está garantizada su terminación y es **completo**; esto es, que siempre encontrará una solución si ésta existe.
 
-Decimos que un algoritmo de búsqueda es **admisible** si se garantiza que el valor de retorno es una solución óptima. En A*, si la heurística es admisible, entonces A* es admisible. Una heurística admisible es aquella que cumple que $$0 \leq h(x) \leq h^*(x) \quad \forall x$$ donde $h^*(x)$ es el coste del camino óptimo en el árbol de estados para alcanzar la solución desde el nodo $x$.
+Decimos que un algoritmo de búsqueda es **admisible** si se garantiza que el valor de retorno es una solución óptima. En A*, si la heurística es admisible, entonces A* es admisible. Una heurística admisible es aquella que cumple que $0 \leq h(x) \leq h^*(x) \quad \forall x$, donde $h^*(x)$ es el coste del camino óptimo en el árbol de estados para alcanzar la solución desde el nodo $x$.
 
 Además, si una heurística está mejor **informada** que otra, entonces, con la primera se requieren menos pasos para alcanzar la solución.
 
@@ -323,7 +323,7 @@ graph BT
 
 ## 1. Componentes de un juego
 
-Un juego es cualquier situación de decisión con varios agentes/jugadores, gobernada por un conjunto de reglas y con un resultado bien definido. Se caracteriza por que ninguno de los jugadores con su única actuación puede definir el resultado. Es decir, las decisiones que toma el otro afectan a las tuyas.
+Un juego es cualquier situación de decisión con varios agentes/jugadores, gobernada por un conjunto de reglas y con un resultado bien definido. Se caracteriza por el hecho de que ninguno de los jugadores puede definir el resultado con su única actuación. Es decir, las decisiones que toma el otro afectan a las tuyas.
 
 El tipo de juegos viene dado por las componentes que lo forman. Estas son:
 
@@ -336,17 +336,16 @@ El tipo de juegos viene dado por las componentes que lo forman. Estas son:
 
 Todas estas componentes sirven para construir el **árbol de juego**, el cual nos permite analizar los posibles movimientos y sus valores para calcular el óptimo.
 
-En general, los juegos pueden ser vistos como un problema de optimización. Por tanto, han sido sujeto de estudio durante mucho tiempo y de gran interés, desarrollando hasta su propia área de investigación conocida como **Teoría de Juegos**.
+En general, los juegos pueden ser vistos como un problema de optimización. Por tanto, han sido sujeto de estudio de gran interés durante mucho tiempo, dando lugar a la **Teoría de Juegos**.
 
-Los juegos pueden llegar a ser de tipos totalmente distintos. Las diferencias son tan sustanciales que pueden llegar a crearse sus
-propias áreas de investigación. Algunos de estos tipos son:
+Los juegos pueden llegar a ser de tipos totalmente distintos. Las diferencias son tan sustanciales que pueden definir sus propias áreas de investigación. Algunos de estos tipos son:
 
-- **Juegos de suma nula o no nula**. En los juegos de suma nula, la suma de las puntuaciones de todos los jugadores es 0. El póker es un ejemplo de éstos. En los juegos de suma no nula, el incremento de la puntuación de un jugador no tiene por qué implicar el decrecimiento en la de otro.
+- **Juegos de suma nula o no nula**. En los juegos de suma nula, la suma de las puntuaciones de todos los jugadores es 0. El póker es un ejemplo de éstos. En los juegos de suma no nula, el incremento de la puntuación de un jugador no tiene por qué implicar un decremento en la de otro.
 - **Juegos simétricos y asimétricos**: un juego simétrico se caracteriza por el hecho de que el resultado de una cierta estrategia depende solo de las otras estrategias usadas, no de quién las juega.
-- **Juegos cooperativos/no cooperativos**: En los primeros, los jugadores pueden formar alianzas forzadas externamente, mientras que los otros se caracterizan por no tener alianzas forzadas o, directamente, imposibilitan su formación.
-- **Juegos simultáneos y secuenciales**: los juegos simultáneos son aquellos en los que todos los jugadores realizan sus acciones a la vez,  o aquellos en los que los jugadores que toman acciones después no conocen las jugadas previas de los otros.
+- **Juegos cooperativos/no cooperativos**: En los primeros, los jugadores pueden formar alianzas forzadas externamente, mientras que los otros se caracterizan por no obligar a cooperar o, directamente, imposibilitan la formación de alianzas.
+- **Juegos simultáneos y secuenciales**: los juegos simultáneos son aquellos en los que todos los jugadores realizan sus acciones a la vez, o aquellos en los que los jugadores que toman acciones después no conocen las jugadas previas de los otros. En los juegos secuenciales los jugadores conocen los movimientos previos de los otros jugadores y pueden actuar consecuentemente.
 - **Juegos de información perfecta o imperfecta**: En los juegos de información perfecta, todos los jugadores tienen conocimiento del estado del juego.
-- **Juegos de longitud infinita**
+- **Juegos de longitud infinita**.
 - **Juegos combinatorios**: la dificultad de encontrar una estrategia óptima viene de la cantidad de movimientos posibles. Un ejemplo es el ajedrez. Normalmente los juegos de información imperfecta suelen tener un carácter combinatorio.
 - **Juegos diferenciales**: la evolución de las variables de estado de los jugadores se rige por ecuaciones diferenciales.
 - **Metajuegos**: estos juegos tratan de desarrollar reglas para otro juego, el objetivo o el jugador.
@@ -365,13 +364,13 @@ Formalmente, en Inteligencia Artificial, puede definirse un juego por
 ### Descripción
 
 El factor de ramificación es el número medio de nodos hijos que se genera por cada nodo. Este factor nos permite conocer cuántos movimientos posibles se puede hacer por turno. Esto nos proporciona una medida de la complejidad: cuanto mayor es el factor, más complejo se vuelve el juego, dado que el número de movimientos es mayor. Consecuentemente, el tamaño del árbol también se ve proporcionalmente afectado por dicho coeficiente.
-No obstante, no solo el factor de ramificación determina la complejidad de un juego. A modo de ejemplo: tenemos que el árbol del GO es mayor que el del ajedrez, pero el ajedrez se considera más complejo.
+No obstante, no solo el factor de ramificación determina la complejidad de un juego. A modo de ejemplo: el árbol del GO es mayor que el del ajedrez, pero el ajedrez se considera más complejo.
 
-Uno de los principales problemas de la exploración de grafos es que el análisis podría no ser computacionalmente viable. Por ejemplo: el favor de ramificación del ajedrez es 35. Con 20 movimientos, cada jugador tendría aproximadamente 35^40 nodos para explorar. Únicamente son 20 movimientos. Conforme se avanza, más difícil se vuelve. Por ello, debemos buscar una forma de calcular soluciones viables aunque no sean las óptimas. Para ello, se han desarrollado una serie de algoritmos. Uno de los más famosos es el **algoritmo MiniMax**
+Uno de los principales problemas de la exploración de grafos es que el análisis podría no ser computacionalmente viable. Por ejemplo: el favor de ramificación del ajedrez es 35. Con 20 movimientos, cada jugador tendría aproximadamente 35^40 nodos para explorar. Únicamente son 20 movimientos. Conforme se avanza, más difícil se vuelve. Por ello, debemos buscar una forma de calcular soluciones viables aunque no sean las óptimas. Para ello, se han desarrollado una serie de algoritmos. Uno de los más famosos es el algoritmo MiniMax
 
-El algoritmo Minimax es una regla de decisión usada en inteligencia artificial para minimizar el número de pérdidas en el peor de los casos, o para maximizar la ganancias en el mejor de los casos. En el último, se denomina al algoritmo maximin. Habitualmente se usa en juegos por turnos de dos jugadores. Se basa en juegos de suma nula. Es utilizado en juegos bipersonales de suma nula con información perfecta.
+El **algoritmo Minimax** es una regla de decisión usada en inteligencia artificial para minimizar el número de pérdidas en el peor de los casos, o para maximizar la ganancias en el mejor de los casos. En el último, se denomina al algoritmo maximin. Se basa en juegos de suma nula. Es utilizado en juegos bipersonales por turnos de suma nula con información perfecta.
 
-No obstante, no todos los juegos se pueden se pueden resolver. Los que tienen árboles complejos resultan imposibles de explorar con totalidad hasta la terminación. Por tanto, debemos distinguir entre juegos en los que podamos explorar el árbol completo de los que no. Para esto, se intenta buscar una buena jugada inmediata. Es de gran importancia la heurística para conseguirlo.
+No obstante, no todos los juegos se pueden se pueden resolver. Los que tienen árboles complejos resultan imposibles de explorar en su totalidad. Por tanto, debemos distinguir entre juegos en los que sí podamos recorrer el árbol completo de los que no. Para esto, se intenta buscar una buena jugada inmediata. Es de gran importancia la heurística para conseguirlo.
 
 ### Algoritmo
 
@@ -404,12 +403,11 @@ Para k = 1, ... , b:
 Devolver V(J)
 ```
 
-### Optimizando con la poda alfa-beta
+### Optimizando Minimax mediante la poda alfa-beta
 
 El problema de este algoritmo es que el número de estados que tiene que examinar es exponencial. No podemos, por tanto, eliminar el exponente. Pero esto no nos impide dividirlo, con eficacia, a la mitad. Introducimos, por tanto, la **poda alfa beta**.
 
 Este algoritmo se encarga de parar la evaluación de un movimiento cuando se ha encontrado al menos un movimiento cuya evaluación es peor que otro que ya se había examinado. Dicho movimiento no necesita ser desarrollado. Cuando se aplica a un árbol minimax estándar se devuelve el mismo movimiento, pero poda todas las ramas que no influyen en la decisión final.
-
 
 El algoritmo mantiene dos valores, $\alpha$ y $\beta$, que representan el valor mínimo que el jugador maximizador se asegura, y el valor máximo que el jugador minimizador se asegura. Inicialmente, $\alpha = -\infty$, $\beta = \infty$.
 
@@ -428,8 +426,8 @@ Existen varios problemas en el cálculo de predicadores. Enumeraremos algunos de
 1. **Expresar todo en fórmulas lógicas** es complicado. Las heurísticas, como se vio, ya son de por sí difíciles de expresar. Ahora, aparte de estas, debemos añadirles la necesidad de escribir metaconocimiento, jerarquía y herencia, así como igualdad y sentido común entre otras.
 2. Es complicado hacer **razonamientos acerca de predicados**. No se pueden hacer proposiciones acerca de predicados. Además, estos siempre se aplican a objetos o a funciones, pero nunca se puede tener un predicado sobre un predicado. Esto hace que, por ejemplo, podamos decir que la propiedad ser estudios@ es inteligente, sino que dicha propiedad pertenece al conjunto de cosas inteligentes.
 3. **Razonar sobre el tiempo** es complejo. A cada instante puede cambiar el estado del conocimiento. En principio, el tiempo es continuo. No obstante, para trabajar con este, normalmente se suele discretizar, por lo que complica la representación. Asimismo, debemos añadir acciones, operadores de incrementos temporales, cambios de situaciones...
-4. **Información incompleta o imprecisa**. El mundo real está lleno de ella. Es una cantidad de imprecisión importante. Entonces, ¿Cómo podríamos obtener conocimiento objetivo mediante predicados si partimos de imprecisiones?
-5. **Excepciones**: aunque tengamos reglas generales, siempre se podrían producir casos en los que no se cumplen. Por ejemplo, los humanos tienen dos piernas en general, pero puede haber humanos sin alguna extremidad. Se complica, por lo tanto, expresar información precisa y concisa.
+4. **Información incompleta o imprecisa**. El mundo real está lleno de ella. Es una cantidad de imprecisión importante. Entonces, ¿Cómo podríamos obtener conocimiento objetivo mediante predicados si partimos de imprecisiones o verdades a medias?
+5. **Excepciones**: aunque tengamos reglas generales, siempre se podrían producir casos en los que no se cumplen. Por ejemplo, los humanos tienen dos piernas en general, pero puede haber humanos sin alguna extremidad. Se complica, por lo tanto, expresar información de forma precisa y concisa.
 6. **Monotonía**: la lógica de predicados es monótona. Esto dificulta la actualización de las Bases de Conocimiento.
 
 ### Problemas computacionales
@@ -438,15 +436,16 @@ Existen varios problemas en el cálculo de predicadores. Enumeraremos algunos de
 2. La lógica de predicados **no es completa**. Algo podría ser verdadero y no se podría demostrar. Dependemos de los axiomas para poder demostrarlos. La elección de éstos es clave.
 3. Finalmente, la lógica es **compleja computacionalmente**. El árbol de predicados se expande exponencialmente. Esto hace difícil su computación.
 
-
-
 <div style="page-break-after: always;"></div>
 
-## 4. Modelos de conocimiento heredable ¿Qué tipo de conocimiento organizan las redes semánticas? Describir en líneas generales el concepto de “frame”.
+## 4. Modelos de conocimiento heredable ¿Qué tipo de conocimiento organizan las redes semánticas? Describir en líneas generales el concepto de "frame".
 
 Los modelos de conocimiento heredables son un intento de acercamiento a la forma en la que almacenamos nosotros, los humanos, el conocimiento.
 
-En las **redes asociativas**, cada nodo representa un concepto (o una proposición), y los enlaces corresponden a relaciones (inclusión, pertenencia o causalidad) o a categorías gramaticales.
+En las **redes asociativas**, cada nodo representa un concepto (o una proposición), y los enlaces corresponden a relaciones (inclusión, pertenencia o causalidad) o a categorías gramaticales. Entre ellas, se conocen:
+- **Redes de clasificación**: clasifican conceptos u objetos con sus características propias (herencia, por ejemplo).
+- **Redes causales**: son las que llevan asociadas juntos a sus nodos una relación de influencia, representada por los enlaces.
+- **Redes semánticas**, que veremos en la siguiente sección.
 
 ### Redes semánticas
 
@@ -473,8 +472,8 @@ El siguiente es más complejo:
 Los frames son estructuras de datos usadas para representar una situación estereotipada. Se basan en el concepto de considerar la resolución de problemas humana como el proceso de rellenar huecos de descripciones parcialmente realizadas. La idea subyacente es que el conocimiento concerniente a individuos o clases de individuos, así como sus relaciones, en dicha estructura.
 
 Tipos de frames:
-- Frames clase, o frames genéricas: representan el conocimiento de clases de objetos.
-- Frames instancia: representan conocimiento de objetos individuales.
+- **Frames clase**, o frames genéricas: representan el conocimiento de clases de objetos.
+- **Frames instancia**: representan conocimiento de objetos individuales.
 
 Un conjunto de frames que representa el conocimiento de un dominio de interés es organizada jerárquicamente en lo que es llamado una **taxonomía**. Esta está asociada a un método de razonamiento automático llamado herencia. Esta taxonomía es representada mediante un grafo dirigido acíclico en el que solo se dan relaciones del tipo *instancia-de* y *subclase-de*. Cada nodo simboliza un frame.
 
@@ -489,12 +488,11 @@ Algunos ejemplos de frames son:
 
 La notación de los frames no permite saber si el valor de una instancia ha sido heredado o ha sido especificado explícitamente. Asimismo, no permite calcular los valores de un atributo a partir de los valores de otro atributo.
 
-Para solucionar dichos problemas, surgen las **facetas**, unas extensiones de la definición de frame.
+Para solucionar dichos problemas, surgen las **facetas**, unas extensiones de la definición de frame.
 
 ### Faceta
 
 Una faceta es una propiedad asociada a un atributo. Indican algún tipo de información sobre dicho atributo. Estos pueden ser el valor por defecto, cardinalidad, valor real, si es heredado,  o incluso la integración de conocimiento declarativo y procedural (las denominadas facetas demonio).
-
 
 <div style="page-break-after: always;"></div>
 
