@@ -48,6 +48,8 @@
   - [5. Estructura y componentes de un sistema experto](#5-estructura-y-componentes-de-un-sistema-experto)
   - [6. Paradigmas de Aprendizaje Automático.](#6-paradigmas-de-aprendizaje-automático)
   - [7. Describir el problema del ruido y el del sobreajuste en aprendizaje automático.](#7-describir-el-problema-del-ruido-y-el-del-sobreajuste-en-aprendizaje-automático)
+    - [Ruido](#ruido)
+    - [Sobreajuste](#sobreajuste)
   - [8. ¿Qué son y cómo se construyen los árboles de decisión?](#8-qué-son-y-cómo-se-construyen-los-árboles-de-decisión)
 
 <!-- /code_chunk_output -->
@@ -79,7 +81,7 @@ Atendiendo al nivel de abstracción, podemos clasificarlos en:
 3. **Híbridos**: es una mezcla entre deliberativo y reactivo. Si durante el desarrollo de un plan ocurren problemas, se usarían los sensores de los que dispone para modificarlo y continuar con su ejecución.
 
 <p align="center">
-  <img src="./img/Arquitecturas_agentes.png">
+  <img src="./img/Arquitecturas_agentes.png" width=600>
 </p>
 
 <div style="page-break-after: always;"></div>
@@ -212,7 +214,7 @@ Los distintos métodos de búsqueda local se diferencian en el modo en el que de
     - El **algoritmo de enfriamiento simulado** se basa en el proceso de temple en metalurgia. La idea básica es que se permita **descender en algunos nodos** de forma controlada. Esto, aparentemente, lleva a soluciones peores. No obstante, con el tiempo siempre se mueve a soluciones mejores. En vez de elegir el mejor nodo, escoge uno aleatorio. Si la situación mejora, se coge este nodo como el actual. Cuanta mayor sea la temperatura, más probabilidad habrá de que al generar como sucesor un estado peor éste sea elegido. La elección de un estado peor estará en función de su diferencia de calidad con el estado actual; cuanta más diferencia, menos probabilidad de elegirlo. Este algoritmo es eficiente y fácil de implementar. Sin embargo, el ajuste de los distintos parámetros puede llevar a muchas pruebas de ensayo y error.
 
 <p align="center">
-  <img src="img/Escalada.png">
+  <img src="img/Escalada.png" width=800>
 </p>
 
 <div style="page-break-after: always;"></div>
@@ -459,13 +461,13 @@ Las redes semánticas tienen el problema de volverse completamente inmanejables 
 Aquí tenemos un par de ejemplos de red semántica la encontramos en la siguiente foto:
 
 <p align="center">
-  <img src="img/Red_sem.png">
+  <img src="img/Red_sem.png" width=600>
 </p>
 
 El siguiente es más complejo:
 
 <p align="center">
-  <img src="img/Red_sem2.png">
+  <img src="img/Red_sem2.png" width=600>
 </p>
 
 ### Frames
@@ -483,8 +485,8 @@ Cada frame de una taxonomía tiene un nombre único y solo puede tener una super
 Algunos ejemplos de frames son:
 
 <p align="center">
-  <img src="img/Frame1.png">
-  <img src="img/Frame2.png">
+  <img src="img/Frame1.png" width=300>
+  <img src="img/Frame2.png" width=300>
 </p>
 
 La notación de los frames no permite saber si el valor de una instancia ha sido heredado o ha sido especificado explícitamente. Asimismo, no permite calcular los valores de un atributo a partir de los valores de otro atributo.
@@ -547,14 +549,22 @@ Existen diferentes tipos de aprendizaje atendiendo a la forma de mejorar la expe
 Si nos centramos en la forma en la que se produce la retroalimentación, encontramos 3 tipos distintos:
 - **Aprendizaje supervisado**: para cada entrada, se dispone de un supervisor que proporciona una salida deseada. Es utilizado por los aprendizajes inductivos.
 - **Aprendizaje no supervisado**: no se dispone de una salida deseada para cada entrada, sino que se busca agrupar los datos en función de ciertas características, denominadas medidas de distancia. Es utilizado por los aprendizajes inductivos también.
-- **Aprendizaje por refuerzo**: basado en el conductismo. Se aprende a mediante procesos de ensayo-error en los que se obtienen señales de beneficio/coste. Es el más generalizado. Hay que tener cuidado con el diseño de las señales de retroalimentación, dado que pueden convertirse en armas de doble filo. A veces, no hay decisión correcta o incorrecta.
+- **Aprendizaje por refuerzo**: basado en el conductismo. Se aprende mediante procesos de ensayo-error en los que se obtienen señales de beneficio/coste. Es el más generalizado. Hay que tener cuidado con el diseño de las señales de retroalimentación, dado que pueden convertirse en armas de doble filo. A veces, no hay decisión correcta o incorrecta.
 
+Existen diferentes herramientas destacables en el aprendizaje. Algunas de estas son:
+- Técnicas estadísticas.
+- Técnicas de árboles.
+- Análisis clúster.
+- Modelos bioinspirados:
+  - Algoritmos genéticos.
+  - Programación evolutiva.
+  - Modelos conexionistas (Para redes neuronales).
 
 <div style="page-break-after: always;"></div>
 
 ## 7. Describir el problema del ruido y el del sobreajuste en aprendizaje automático.
 
-Para describir el problema del ruido y el sobreajuste, necesitamos dar primero unas pocas definiciones para poder trabajar:
+Para describir el problema del ruido y el sobreajuste, necesitamos definir unos conceptos previos. Los presentamos a continuación.
 
 El objetivo del aprendizaje automático es aprender una función $f$, para hallar pares $(x, f(x))$. Para ello, debemos encontrar una hipótesis $h$ tal que $h = f$ sobre unos conjuntos de entrenamiento.
 
@@ -562,13 +572,17 @@ Diremos que una hipótesis está **bien generalizada** si permite predecir ejemp
 
 A la hora de elegir una, aplicaremos la **Navaja de Ockham** (*En igualdad de condiciones, la explicación más sencilla suele ser la más probable*).
 
-Diremos que un problema de aprendizaje es realizable si el espacio de hipótesis contiene a la función verdadera.
+Diremos que un problema de aprendizaje es **realizable** si el espacio de hipótesis contiene a la función verdadera.
 
-Pasamos pues, a hablar del problema del **ruido**. Este ocurre cuando se dan dos o más ejemplos con la misma descripción tienen diferentes clasificaciones. También puede ocurrir cuando los atributos no describen con suficiente detalle los datos, o porque el el dominio es no determinista. Este ruido se traduce en error. Es posible que el ruido proceda de datos que están mal en primer lugar. No podemos alterar los datos que ya teníamos previamente para resolverlo.
+### Ruido
+
+Pasamos pues, a hablar del problema del **ruido**. Este ocurre cuando se dan dos o más ejemplos con la misma descripción tienen diferentes clasificaciones. También puede ocurrir cuando los atributos no describen con suficiente detalle los datos, o bajo un dominio no determinista. Este ruido se traduce en error. Es posible que el ruido proceda de datos que están mal en primer lugar. Por desgracia, no podemos alterar los datos que ya teníamos previamente para resolverlo.
 
 Una posible solución sería interpolar dichos ejemplos o estimar ciertas posibilidades para cada uno. También se podría intentar clasificar en dos categorías distintas y ver cuál produce mejores resultados para el aprendizaje.
 
-No obstante, no tendría por qué saberse cuál de los ejemplos es incorrecto. Para ello, lo que se hace es tomar los ejemplos cuyas descripciones coinciden. Entonces, se comparan los resultados que se obtienen con la misma clasificación para éstos. Aquél que produzca mejor desempeño es el que se conserva.
+No obstante, no tendría por qué saberse cuál de los ejemplos es incorrecto. Para solucionarlo, lo que se hace es tomar los ejemplos cuyas descripciones coinciden. Entonces, se comparan los resultados que se obtienen con la misma clasificación para éstos. Aquél que produzca mejor desempeño es el que se conserva.
+
+### Sobreajuste
 
 El **sobreajuste** (en inglés, *overfitting*) ocurre cuando se encuentran regularidades poco significativas en los datos. Se aprende hasta el punto en el que se conocen los errores del set de entrenamiento. Por tanto, conseguimos hacer predicciones muy buenas en el conjunto de entrenamiento, pero falla en los conjuntos de test. Esto produce resultados muy pobres. Además, las funciones con sobreajuste suelen necesitar más información que la propia función óptima y son menos portables.
 
@@ -583,13 +597,13 @@ Podemos concluir que la mejor hipótesis es aquella que tiene mejor ajuste sobre
 
 ## 8. ¿Qué son y cómo se construyen los árboles de decisión?
 
-Un árbol de decisión es una modelo de predicción utilizado en la Inteligencia Artificial. Toman como entrada un objeto o una situación descrita a través de un conjunto de atributos y devuelve una decisión. Esta decisión es el valor previsto de la salida para dicha entrada, y adquiere la forma Sí/No. Son, por tanto, funciones del tipo booleanas.
+Un árbol de decisión es un modelo de predicción utilizado en la Inteligencia Artificial. Toma como entrada un objeto o una situación descrita a través de un conjunto de atributos y devuelve una decisión. Esta decisión es el valor previsto de la salida para dicha entrada, y adquiere la forma Sí/No. Son, por tanto, funciones del tipo booleanas.
 
 Es una de las técnicas más famosas de aprendizaje supervisado clasificatorio. Son una buena forma de introducirse al campo del aprendizaje inductivo, y son sencillos de implementar.
 
-Tanto la salida como los atributos pueden ser discretos o continuos. En el caso de los primeros, si es discreta, estaríamos clasificando; y si es continua, haciendo una regresión.
+Tanto la salida como los atributos pueden ser discretos o continuos. Si la salida es discreta, estaríamos clasificando; y si es continua, haciendo una regresión.
 
-Los árboles desarrollan una secuencia de un test para poder alcanzar una decisión. Cada nodo interno hace un test para el valor de una cierta propiedad. Las ramas están etiquetadas con sus posibles valores. Cada nodo hoja del árbol representa qué ha de ser devuelto si dicho nodo es alcanzado.
+Los árboles desarrollan una secuencia de un test para poder alcanzar una decisión. Cada nodo interno hace un test para el valor de una cierta propiedad. Las ramas están etiquetadas con sus posibles valores, y cada nodo hoja del árbol representa qué ha de ser devuelto si dicho nodo es alcanzado.
 
 Esta manera de almacenar información en forma de grafos dirigidos es muy natural para el humano.
 
@@ -601,16 +615,16 @@ Por ejemplo, en el libro *Artificial Intelligence, a modern approach* de Rusell,
 
 Necesitaremos ciertos ejemplos con sus respectivas salidas. Al conjunto de estos ejemplos los llamaremos **conjunto de entrenamiento**.
 
-Una forma de construcción del árbol de decisión trivial es crear un árbol de decisión con un camino hasta una hoja para cada ejemplo. Este camino debe comprobar cada atributo, de forma que se desemboca en el ejemplo del set de entrenamiento. Decimos que es trivial porque no nos permite extraer ningún patrón aplicable a otras instancias del problema. Además, el árbol puede tener un tamaño desmesurado.
+Una forma de construcción del **árbol de decisión trivial** es crear un árbol de decisión con un camino hasta una hoja para cada ejemplo. Este camino debe comprobar cada atributo, de forma que se desemboca en el ejemplo del set de entrenamiento. Decimos que es trivial porque no nos permite extraer ningún patrón aplicable a otras instancias del problema. Además, el árbol puede tener un tamaño desmesurado.
 
-Por tanto, aplicando diferentes técnicas como la navaja de Ockham, conseguimos encontrar otros árboles más pequeños que son consistentes con nuestros ejemplos. No obstante, hallar el ínfimo en temas de tamaño es computacionalmente inviable.
+Por tanto, aplicando diferentes técnicas como la navaja de Ockham, conseguimos encontrar otros árboles más pequeños que son consistentes con nuestros ejemplos. No obstante, hallar el ínfimo con respecto al tamaño es computacionalmente inviable.
 
-Para arreglar este problema, podemos usar heurísticas simples para identificar árboles pseudo-óptimos. La idea básica del algoritmo es hacer el test primero sobre el atributo más importante. Se considera el atributo más importante aquel que discrimina el mayor número de ejemplos; es decir, el más significativo. Solo los ejemplos de entrenamiento que llegan al nodo siguiente se utilizan para elegir el nuevo atributo.
+Para arreglar este problema, **podemos usar heurísticas simples** para identificar árboles pseudo-óptimos. La idea básica del algoritmo es hacer el test primero sobre el atributo más importante. Se considera el atributo más importante aquel que discrimina el mayor número de ejemplos; es decir, el más significativo. Solo los ejemplos de entrenamiento que llegan al nodo siguiente se utilizan para elegir el nuevo atributo.
 
 Como ejemplo, tenemos este desarrollo extraído de las diapositivas de Miguel Delgado Calvo-Flores:
 <p align="center">
-  <img src="img/1.png">
-  <img src="img/2.png">
-  <img src="img/3.png">
-  <img src="img/4.png">
+  <img src="img/1.png" width=500>
+  <img src="img/2.png" width=500>
+  <img src="img/3.png" width=500>
+  <img src="img/4.png" width=500>
 </p>
