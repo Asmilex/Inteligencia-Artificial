@@ -90,7 +90,7 @@ Atendiendo al nivel de abstracción, podemos clasificarlos en:
 
 ### Agentes reactivos
 
-Un **agente reactivo**, tras percibir el entorno a través de sus sensores, actúa de forma rápida y efectiva. Tienen una representación interna de su entorno. Toman acciones basadas en el presente, sin tener en cuenta las del pasado. Son agentes relativamente simples y actúan con con otros de manera
+Un **agente reactivo**, tras percibir el entorno a través de sus sensores, actúa de forma rápida y efectiva. Tienen una representación interna de su entorno. Toman acciones basadas en el presente, sin tener en cuenta las del pasado. Son agentes relativamente simples y actúan con otros de manera automática.
 
 Características:
 - Comportamiento diseñado de manera explícita. Necesario anticipar todas las opciones.
@@ -265,9 +265,9 @@ Si definimos $f^*$ como el coste del camino óptimo, se tiene lo siguiente:
 
 Intuitivamente, es obvio que la primera solución encontrada debe ser la óptima, pues los nodos vecinos tendrán todos un coste mayor en $f$, y por tanto, un coste mayor en $g$.
 
-En grafos finitos con aristas no negativas, A* está garantizada su terminación y es **completo**; esto es, que siempre encontrará una solución si ésta existe.
+En grafos finitos con aristas no negativas, A* garantiza su terminación y es **completo**; esto es, que siempre encontrará una solución si ésta existe.
 
-Decimos que un algoritmo de búsqueda es **admisible** si se garantiza que el valor de retorno es una solución óptima. En A*, si la heurística es admisible, entonces A* es admisible. Una heurística admisible es aquella que cumple que $0 \leq h(x) \leq h^*(x) \quad \forall x$, donde $h^*(x)$ es el coste del camino óptimo en el árbol de estados para alcanzar la solución desde el nodo $x$.
+Decimos que un algoritmo de búsqueda es **admisible** si se garantiza que el valor de retorno es una solución óptima. En A\*, si la heurística es admisible, entonces A\* es admisible. Una heurística admisible es aquella que cumple que $0 \leq h(x) \leq h^*(x) \quad \forall x$, donde $h^*(x)$ es el coste del camino óptimo en el árbol de estados para alcanzar la solución desde el nodo $x$. Es decir, la heurística nunca sobreestima el coste de llegar a la solución.
 
 Además, si una heurística está mejor **informada** que otra, entonces, con la primera se requieren menos pasos para alcanzar la solución.
 
@@ -538,7 +538,7 @@ El aprendizaje automático es la rama de de la Inteligencia Artificial que tiene
 Se dice que un programa aprende de la experiencia $E$ con respecto a una tarea $T$ existiendo alguna medida de rendimiento $P$ si su desempeño en $T$, medida por $P$ mejora la experiencia $E$.
 
 Existen diferentes tipos de aprendizaje atendiendo a la forma de mejorar la experiencia:
-- El **aprendizaje memorístico** es el más antiguo. Es la acción de introducir en la memoria un concepto o idea sin saber o entender su significado, sin tener ideas previas. SE tiene como instrumento las múltiples repeticiones de dicho concepto. De ese modo, se recuerdan posteriormente.
+- El **aprendizaje memorístico** es el más antiguo. Es la acción de introducir en la memoria un concepto o idea sin saber o entender su significado, sin tener ideas previas. Se tiene como instrumento las múltiples repeticiones de dicho concepto. De ese modo, se recuerdan posteriormente.
 - El **aprendizaje deductivo** utiliza la deducción lógica con reglas para inferir nuevo conocimiento basándonos en el que teníamos previamente. Se utiliza tanto la inferencia y deducción ya mencionada como el razonamiento artificial.
 - El **aprendizaje analítico** se basa en explicaciones. Se construye una explicación para cada ejemplo en relación con un concepto dado, y se generaliza. De esta forma, se puede usar en el futuro.
 - El **aprendizaje analógico** consiste en entender y resolver una situación gracias a su parecido con otras resultas anteriormente. Esta técnica debe usarse con cautela, ya que se puede extrapolar abruptamente.
@@ -557,6 +557,8 @@ Existen diferentes herramientas destacables en el aprendizaje. Algunas de estas 
   - Algoritmos genéticos.
   - Programación evolutiva.
   - Modelos conexionistas (Para redes neuronales).
+
+[Link al blog de Nvidia donde hablan de todos estos conceptos detalladamente](https://blogs.nvidia.com/blog/2018/08/02/supervised-unsupervised-learning/#:~:text=In%20a%20supervised%20learning%20model,and%20patterns%20on%20its%20own.)
 
 <div style="page-break-after: always;"></div>
 
